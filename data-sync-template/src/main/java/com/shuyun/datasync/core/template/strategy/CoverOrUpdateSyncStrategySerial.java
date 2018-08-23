@@ -5,4 +5,8 @@ package com.shuyun.datasync.core.template.strategy;
  */
 public class CoverOrUpdateSyncStrategySerial {
 
+    public static void handle() {
+
+    }
+
 }

@@ -3,6 +3,7 @@ package com.shuyun.datasync.core.template;
 import com.shuyun.datasync.common.SyncStrategyType;
 import com.shuyun.datasync.core.HbaseMetaManager;
 import com.shuyun.datasync.core.TaskConfigManager;
+import com.shuyun.datasync.core.template.strategy.CoverOrUpdateSyncStrategySerial;
 import com.shuyun.datasync.core.template.strategy.CoverSyncStrategySerial;
 import com.shuyun.datasync.core.template.strategy.CoverSyncStrategyParallel;
 import com.shuyun.datasync.domain.TaskConfig;
@@ -31,13 +32,16 @@ public class TaskTemplate {
             logger.error("hbase table is null!");
             throw new Exception("hbase table is null!");
         }
-
-        if(SyncStrategyType.SERIAL_COVER_ALWAYS.equals(taskConfig.getSyncStrategy())) {
-            CoverSyncStrategySerial.handle(tables, taskConfig);
-        } else if(SyncStrategyType.PARALLEL_COVER_ALWAYS.equals(taskConfig.getSyncStrategy())) {
-            CoverSyncStrategyParallel.handle(tables, taskConfig);
-        } else if(SyncStrategyType.SERIAL_COVER_OR_UPDATE_BY_COUNT.equals(taskConfig.getSyncStrategy())) {
-
+        switch (taskConfig.getSyncStrategy()) {
+            case SERIAL_COVER_ALWAYS:
+                CoverSyncStrategySerial.handle(tables, taskConfig);
+                break;
+            case PARALLEL_COVER_ALWAYS:
+                CoverSyncStrategyParallel.handle(tables, taskConfig);
+                break;
+            case SERIAL_COVER_OR_UPDATE_BY_COUNT:
+                CoverOrUpdateSyncStrategySerial.handle();
+                break;
         }
     }
 }
