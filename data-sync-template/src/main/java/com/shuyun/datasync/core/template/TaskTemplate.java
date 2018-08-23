@@ -42,6 +42,9 @@ public class TaskTemplate {
             case SERIAL_COVER_OR_UPDATE_BY_COUNT:
                 CoverOrUpdateSyncStrategySerial.handle();
                 break;
+            default:
+                logger.error("strategy error!");
+                throw new Exception("strategy error!");
         }
     }
 }
