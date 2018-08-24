@@ -11,6 +11,7 @@
     <modules>
         <module>storm-phoenix-example</module>
         <module>data-sync-template</module>
+        <module>atlas-example</module>
     </modules>
 
     <repositories>
