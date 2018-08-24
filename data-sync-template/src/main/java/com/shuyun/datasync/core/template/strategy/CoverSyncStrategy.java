@@ -123,7 +123,7 @@ public class CoverSyncStrategy {
         }
         sb.deleteCharAt(sb.length() - 1);
         sb.append(")");
-        if(taskConfig.getFileType() != null || taskConfig.getFileType().equals(FileType.TEXTFILE)) {
+        if(taskConfig.getFileType() != null && taskConfig.getFileType().equals(FileType.TEXTFILE)) {
             sb.append(" ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\001' LINES TERMINATED BY '\\n' ");
         }
         if(StringUtils.isNotBlank(taskConfig.getBucketColumn())) {
