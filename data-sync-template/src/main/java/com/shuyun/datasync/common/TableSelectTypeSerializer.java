@@ -9,7 +9,6 @@ import java.lang.reflect.Type;
  */
 
 public class TableSelectTypeSerializer implements JsonSerializer<TableSelectType>,JsonDeserializer<TableSelectType> {
-    // 对象转为Json时调用,实现JsonSerializer<PackageState>接口
     @Override
     public JsonElement serialize(TableSelectType tableSelectType, Type arg1,
                                  JsonSerializationContext arg2) {

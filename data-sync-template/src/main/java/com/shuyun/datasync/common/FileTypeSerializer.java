@@ -10,7 +10,6 @@ import java.lang.reflect.Type;
  */
 
 public class FileTypeSerializer implements JsonSerializer<FileType>,JsonDeserializer<FileType> {
-    // 对象转为Json时调用,实现JsonSerializer<PackageState>接口
     @Override
     public JsonElement serialize(FileType fileType, Type arg1,
                                  JsonSerializationContext arg2) {

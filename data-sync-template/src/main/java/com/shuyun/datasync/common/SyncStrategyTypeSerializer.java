@@ -9,7 +9,6 @@ import java.lang.reflect.Type;
  */
 
 public class SyncStrategyTypeSerializer implements JsonSerializer<SyncStrategyType>,JsonDeserializer<SyncStrategyType> {
-    // 对象转为Json时调用,实现JsonSerializer<PackageState>接口
     @Override
     public JsonElement serialize(SyncStrategyType strategyType, Type arg1,
                                  JsonSerializationContext arg2) {

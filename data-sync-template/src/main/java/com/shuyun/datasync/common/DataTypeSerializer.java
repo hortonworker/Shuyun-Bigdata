@@ -11,7 +11,6 @@ import java.lang.reflect.Type;
  */
 
 public class DataTypeSerializer implements JsonSerializer<DataType>,JsonDeserializer<DataType> {
-    // 对象转为Json时调用,实现JsonSerializer<PackageState>接口
     @Override
     public JsonElement serialize(DataType dataType, Type arg1,
                                  JsonSerializationContext arg2) {
