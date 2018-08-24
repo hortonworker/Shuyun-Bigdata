@@ -1,5 +1,6 @@
 package com.shuyun.datasync.domain;
 
+import com.shuyun.datasync.common.FileType;
 import com.shuyun.datasync.common.SyncStrategyType;
 
 import java.io.Serializable;
@@ -18,7 +19,7 @@ public class TaskConfig implements Serializable{
     private List<ColumnMapping> columnMapping;
     private String bucketColumn;
     private int bucketSize;
-    private String fileType;
+    private FileType fileType = FileType.ORC;
     private SyncStrategyType syncStrategy = SyncStrategyType.SERIAL_COVER_ALWAYS;
     private long strategySplitCount = 1000;
     private Map<String, String> tblproperties;
@@ -98,11 +99,11 @@ public class TaskConfig implements Serializable{
         this.database = database;
     }
 
-    public String getFileType() {
+    public FileType getFileType() {
         return fileType;
     }
 
-    public void setFileType(String fileType) {
+    public void setFileType(FileType fileType) {
         this.fileType = fileType;
     }
 

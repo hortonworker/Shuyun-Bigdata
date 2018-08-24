@@ -1,6 +1,7 @@
 package com.shuyun.datasync.core.template.strategy;
 
 import com.shuyun.datasync.common.AppConfiguration;
+import com.shuyun.datasync.common.FileType;
 import com.shuyun.datasync.domain.ColumnMapping;
 import com.shuyun.datasync.domain.TaskConfig;
 import org.apache.commons.collections.MapUtils;
@@ -121,14 +122,14 @@ public class CoverSyncStrategy {
         }
         sb.deleteCharAt(sb.length() - 1);
         sb.append(")");
-        if(StringUtils.isBlank(taskConfig.getFileType()) || taskConfig.getFileType().toLowerCase().equals("textfile")) {
+        if(taskConfig.getFileType() != null || taskConfig.getFileType().equals(FileType.TEXTFILE)) {
             sb.append(" ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\001' LINES TERMINATED BY '\\n' ");
         }
         if(StringUtils.isNotBlank(taskConfig.getBucketColumn())) {
             sb.append(" clustered by(").append(taskConfig.getBucketColumn()).append(") into ")
                     .append(taskConfig.getBucketSize()).append(" buckets ");
         }
-        if(StringUtils.isNotBlank(taskConfig.getFileType())) {
+        if(taskConfig.getFileType() != null) {
             sb.append(" STORED AS ").append(taskConfig.getFileType());
         }
         if(MapUtils.isNotEmpty(taskConfig.getTblproperties())) {

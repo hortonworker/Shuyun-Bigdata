@@ -37,4 +37,8 @@ public class AppConfiguration {
     public static String get(String key) {
         return properties.getProperty(key);
     }
+
+    public static void main(String[] args) {
+        System.out.println(FileType.ORC);
+    }
 }
