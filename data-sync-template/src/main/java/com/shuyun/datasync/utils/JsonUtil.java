@@ -16,6 +16,7 @@ public class JsonUtil {
         gsonBuilder.registerTypeAdapter(FileType.class,new FileTypeSerializer());
         gsonBuilder.registerTypeAdapter(SyncStrategyType.class, new SyncStrategyTypeSerializer());
         gsonBuilder.registerTypeAdapter(DataType.class, new DataTypeSerializer());
+        gsonBuilder.registerTypeAdapter(TableSelectType.class, new TableSelectTypeSerializer());
         gson =gsonBuilder.create();
     }
 

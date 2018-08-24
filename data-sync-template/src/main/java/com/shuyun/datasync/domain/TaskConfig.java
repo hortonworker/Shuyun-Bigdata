@@ -2,6 +2,7 @@ package com.shuyun.datasync.domain;
 
 import com.shuyun.datasync.common.FileType;
 import com.shuyun.datasync.common.SyncStrategyType;
+import com.shuyun.datasync.common.TableSelectType;
 
 import java.io.Serializable;
 import java.util.List;
@@ -21,6 +22,7 @@ public class TaskConfig implements Serializable{
     private int bucketSize;
     private FileType fileType = FileType.ORC;
     private SyncStrategyType syncStrategy = SyncStrategyType.SERIAL_COVER_ALWAYS;
+    private TableSelectType tableSelectType = TableSelectType.ALL;
     private long strategySplitCount = 1000;
     private Map<String, String> tblproperties;
     private Map<String, String> sparkConfigProperties;
@@ -129,5 +131,13 @@ public class TaskConfig implements Serializable{
 
     public void setSparkConfigProperties(Map<String, String> sparkConfigProperties) {
         this.sparkConfigProperties = sparkConfigProperties;
+    }
+
+    public TableSelectType getTableSelectType() {
+        return tableSelectType;
+    }
+
+    public void setTableSelectType(TableSelectType tableSelectType) {
+        this.tableSelectType = tableSelectType;
     }
 }

@@ -1,6 +1,7 @@
 package com.shuyun.datasync.core;
 
 import com.shuyun.datasync.common.AppConfiguration;
+import com.shuyun.datasync.common.TableSelectType;
 import com.shuyun.datasync.domain.TaskConfig;
 import com.shuyun.datasync.utils.HBaseClient;
 import org.apache.hadoop.hbase.HTableDescriptor;
@@ -21,6 +22,17 @@ import java.util.regex.Pattern;
 public class HbaseMetaManager {
 
     private static Logger logger = Logger.getLogger(HbaseMetaManager.class);
+
+    public static List<String> getTables(TaskConfig taskConfig) throws Exception {
+        switch (taskConfig.getTableSelectType()) {
+            case ALL:
+                return getSubTables(taskConfig);
+            case AVAILABLE:
+                return getAvailableTables(taskConfig);
+            default:
+                return null;
+        }
+    }
 
     public static List<String> getSubTables(TaskConfig taskConfig) throws Exception {
         List<String> tables = new ArrayList<String>();
@@ -47,5 +59,10 @@ public class HbaseMetaManager {
             client.close();
         }
         return tables;
+    }
+
+    public static List<String> getAvailableTables(TaskConfig taskConfig) throws Exception {
+
+        return null;
     }
 }

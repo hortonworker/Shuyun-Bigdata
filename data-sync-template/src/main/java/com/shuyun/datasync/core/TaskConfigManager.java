@@ -3,6 +3,7 @@ package com.shuyun.datasync.core;
 import com.shuyun.datasync.common.AppConfiguration;
 import com.shuyun.datasync.common.FileType;
 import com.shuyun.datasync.common.SyncStrategyType;
+import com.shuyun.datasync.common.TableSelectType;
 import com.shuyun.datasync.domain.ColumnMapping;
 import com.shuyun.datasync.domain.TaskConfig;
 import com.shuyun.datasync.utils.HBaseClient;
@@ -32,7 +33,7 @@ public class TaskConfigManager {
      * @param configId
      * @return
      */
-    public static TaskConfig loadConfig(String configId, String runMode) {
+    public static TaskConfig getConfig(String configId, String runMode) {
         if("mock".equals(runMode)) {
             return getTestConfig(configId);
         }
@@ -75,6 +76,7 @@ public class TaskConfigManager {
         }
         config.setDatabase("default");
         config.setFileType(FileType.ORC);
+        config.setTableSelectType(TableSelectType.ALL);
         //config.setBucketColumn("name");
         //config.setBucketSize(2);
 

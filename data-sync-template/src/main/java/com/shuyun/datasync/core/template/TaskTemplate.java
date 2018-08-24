@@ -21,13 +21,13 @@ public class TaskTemplate {
 
     public static void execute(String configId, String runMode) throws Exception {
 
-        TaskConfig taskConfig = TaskConfigManager.loadConfig(configId, runMode);
+        TaskConfig taskConfig = TaskConfigManager.getConfig(configId, runMode);
         if(taskConfig == null) {
             logger.error("task config is null!");
             throw new RuntimeException("task config is null!");
         }
 
-        List<String> tables = HbaseMetaManager.getSubTables(taskConfig);
+        List<String> tables = HbaseMetaManager.getTables(taskConfig);
         if(CollectionUtils.isEmpty(tables)) {
             logger.error("hbase table is null!");
             throw new RuntimeException("hbase table is null!");
