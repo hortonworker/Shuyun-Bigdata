@@ -10,7 +10,7 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>storm-phoenix-example</module>
-        <module>atlas-example</module>
+        <module>data-sync-template</module>
     </modules>
 
     <repositories>
