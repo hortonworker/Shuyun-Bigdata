@@ -17,7 +17,7 @@ public class StartUp {
         try {
             runMode = args[0];
             configId = args[1];
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
             logger.error("arguments is blank!", e);
             System.exit(1);
@@ -26,7 +26,7 @@ public class StartUp {
         AppConfiguration.loadConfiguration(runMode);
 
         try {
-            TaskTemplate.execute(configId);
+            TaskTemplate.execute(configId, runMode);
         } catch (Exception e) {
             logger.error("execute task error!", e);
             System.exit(1);

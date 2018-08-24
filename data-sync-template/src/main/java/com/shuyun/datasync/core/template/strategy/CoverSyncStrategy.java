@@ -4,6 +4,7 @@ import com.shuyun.datasync.common.AppConfiguration;
 import com.shuyun.datasync.common.FileType;
 import com.shuyun.datasync.domain.ColumnMapping;
 import com.shuyun.datasync.domain.TaskConfig;
+import com.shuyun.datasync.utils.DataTypeConvert;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -118,7 +119,7 @@ public class CoverSyncStrategy {
         sb.append(taskConfig.getDatabase()).append(".").append(tableName);
         sb.append("(");
         for(ColumnMapping mapping : taskConfig.getColumnMapping()) {
-            sb.append(mapping.getHiveColumn()).append(" ").append(mapping.getType().typeName()).append(",");
+            sb.append(mapping.getHiveColumn()).append(" ").append(DataTypeConvert.sparkTypeToHiveType(mapping.getType())).append(",");
         }
         sb.deleteCharAt(sb.length() - 1);
         sb.append(")");

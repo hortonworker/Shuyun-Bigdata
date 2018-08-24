@@ -19,18 +19,18 @@ public class TaskTemplate {
 
     private static Logger logger = Logger.getLogger(TaskTemplate.class);
 
-    public static void execute(String configId) throws Exception {
+    public static void execute(String configId, String runMode) throws Exception {
 
-        TaskConfig taskConfig = TaskConfigManager.loadConfig(configId);
+        TaskConfig taskConfig = TaskConfigManager.loadConfig(configId, runMode);
         if(taskConfig == null) {
             logger.error("task config is null!");
-            throw new Exception("task config is null!");
+            throw new RuntimeException("task config is null!");
         }
 
         List<String> tables = HbaseMetaManager.getSubTables(taskConfig);
         if(CollectionUtils.isEmpty(tables)) {
             logger.error("hbase table is null!");
-            throw new Exception("hbase table is null!");
+            throw new RuntimeException("hbase table is null!");
         }
         switch (taskConfig.getSyncStrategy()) {
             case SERIAL_COVER_ALWAYS:
