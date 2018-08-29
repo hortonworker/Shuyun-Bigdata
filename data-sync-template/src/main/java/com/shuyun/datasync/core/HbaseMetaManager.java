@@ -77,7 +77,7 @@ public class HbaseMetaManager {
             Table table =  client.getTable(TableName.valueOf(AppConfiguration.get("hbase.data.status.table.name")));
             for(String tableName : tableList) {
                 Result r = table.get(new Get(Bytes.toBytes(tableName)));
-                if(r != null && r.getExists().booleanValue() && Bytes.toInt(r.getValue(Bytes.toBytes("f1"), Bytes.toBytes("status"))) == 1) {
+                if(r != null && Integer.valueOf(Bytes.toString(r.getValue(Bytes.toBytes("f1"), Bytes.toBytes("status")))) == 1) {
                     availableTables.add(tableName);
                 }
             }

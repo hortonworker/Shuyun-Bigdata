@@ -156,7 +156,9 @@ public class CoverSyncStrategy {
             sb.deleteCharAt(sb.length() - 1);
             sb.append(")");
         }
-        return sb.toString();
+        String createSQL = sb.toString();
+        logger.info(createSQL);
+        return createSQL;
     }
 
     protected static String makeInsertSQL(TaskConfig taskConfig, String tableName, String tmpTableName) {
@@ -171,7 +173,9 @@ public class CoverSyncStrategy {
         sb.append(taskConfig.getDatabase()).append(".").append(tableName);
         sb.append(" select * from ").append(tmpTableName);
 
-        return sb.toString();
+        String insertSQL = sb.toString();
+        logger.info(insertSQL);
+        return insertSQL;
     }
 
     protected static String makeDeleteSQL(TaskConfig taskConfig, String tableName, String tmpTableName) {
@@ -189,7 +193,9 @@ public class CoverSyncStrategy {
             logger.error("no primaryKey from update!");
         }
         sb.append("( select ").append(primaryKey).append(" from ").append(tmpTableName).append(")");
-        return sb.toString();
+        String deleteSQL = sb.toString();
+        logger.info(deleteSQL);
+        return deleteSQL;
     }
 
     protected static void updateTableStatus(String tableName) {
