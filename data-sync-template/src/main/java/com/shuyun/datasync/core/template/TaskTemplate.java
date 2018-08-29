@@ -3,6 +3,7 @@ package com.shuyun.datasync.core.template;
 import com.shuyun.datasync.common.SyncStrategyType;
 import com.shuyun.datasync.core.HbaseMetaManager;
 import com.shuyun.datasync.core.TaskConfigManager;
+import com.shuyun.datasync.core.template.strategy.CoverOrUpdateSyncStrategyParallel;
 import com.shuyun.datasync.core.template.strategy.CoverOrUpdateSyncStrategySerial;
 import com.shuyun.datasync.core.template.strategy.CoverSyncStrategySerial;
 import com.shuyun.datasync.core.template.strategy.CoverSyncStrategyParallel;
@@ -40,7 +41,10 @@ public class TaskTemplate {
                 CoverSyncStrategyParallel.handle(tables, taskConfig);
                 break;
             case SERIAL_COVER_OR_UPDATE_BY_COUNT:
-                CoverOrUpdateSyncStrategySerial.handle();
+                CoverOrUpdateSyncStrategySerial.handle(tables, taskConfig);
+                break;
+            case PARALLEL_COVER_OR_UPDATE_BY_COUNT:
+                CoverOrUpdateSyncStrategyParallel.handle(tables, taskConfig);
                 break;
             default:
                 logger.error("strategy error!");

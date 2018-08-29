@@ -1,21 +1,16 @@
 package com.shuyun.datasync.core.template.strategy;
 
-import com.shuyun.datasync.domain.ColumnMapping;
 import com.shuyun.datasync.domain.TaskConfig;
-import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang3.StringUtils;
+import com.shuyun.datasync.utils.ZKLock;
+import com.shuyun.datasync.utils.ZKUtil;
 import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
-import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.types.DataTypes;
-import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,16 +44,19 @@ public class CoverSyncStrategyParallel extends CoverSyncStrategy {
             es.execute(new Runnable() {
                 @Override
                 public void run() {
+                    ZKLock lock = ZKUtil.lock(table);
                     JavaRDD<Row> dataRDD = rddMap.get(table);
 
                     coverData(spark, dataRDD, schema, tc, table);
-
-                    spark.close();
-                    spark.stop();
+                    updateTableStatus(table);
+                    lock.release();
                 }
             });
         }
 
         es.shutdown();
+
+        spark.close();
+        spark.stop();
     }
 }

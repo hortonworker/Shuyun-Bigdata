@@ -2,6 +2,7 @@ package com.shuyun.datasync.core.template.strategy;
 
 import com.shuyun.datasync.common.AppConfiguration;
 import com.shuyun.datasync.common.FileType;
+import com.shuyun.datasync.core.HbaseMetaManager;
 import com.shuyun.datasync.domain.ColumnMapping;
 import com.shuyun.datasync.domain.TaskConfig;
 import com.shuyun.datasync.utils.DataTypeConvert;
@@ -66,13 +67,25 @@ public class CoverSyncStrategy {
         return DataTypes.createStructType(structFields);
     }
 
+    protected static void updateData(final SparkSession spark, final JavaRDD<Row> dataRDD, final StructType schema, final TaskConfig tc, final String table) {
+        String tmpTableName = table + "_tmp";
+
+        Dataset stuDf = spark.createDataFrame(dataRDD, schema);
+        stuDf.printSchema();
+        stuDf.createOrReplaceTempView(tmpTableName);
+
+        spark.sql(makeDeleteSQL(tc, table, tmpTableName));
+
+        spark.sql(makeInsertSQL(tc, table, tmpTableName));
+    }
+
     protected static void coverData(final SparkSession spark, final JavaRDD<Row> dataRDD, final StructType schema, final TaskConfig tc, final String table) {
         String createSQL = makeCreateSQL(tc, table);
         logger.info(createSQL);
         spark.sql(createSQL);
 
         String tmpTableName = table + "_tmp";
-        String insertSQL = makeInsertSQL(tc, table, tmpTableName);
+        String insertSQL = makeInsertSQL(tc, table, tmpTableName, true);
         logger.info(insertSQL);
 
         Dataset stuDf = spark.createDataFrame(dataRDD, schema);
@@ -147,10 +160,39 @@ public class CoverSyncStrategy {
     }
 
     protected static String makeInsertSQL(TaskConfig taskConfig, String tableName, String tmpTableName) {
-        StringBuffer sb = new StringBuffer("insert into ");
+        return makeInsertSQL(taskConfig, tableName, tmpTableName, false);
+    }
+
+    protected static String makeInsertSQL(TaskConfig taskConfig, String tableName, String tmpTableName, boolean overwrite) {
+        String mode = "into table";
+        if(overwrite)
+            mode = "overwrite table";
+        StringBuffer sb = new StringBuffer("insert ").append(mode).append(" ");
         sb.append(taskConfig.getDatabase()).append(".").append(tableName);
         sb.append(" select * from ").append(tmpTableName);
 
         return sb.toString();
+    }
+
+    protected static String makeDeleteSQL(TaskConfig taskConfig, String tableName, String tmpTableName) {
+        StringBuffer sb = new StringBuffer("delete from ");
+        sb.append(tableName).append(" where ");
+        String primaryKey = null;
+        for(ColumnMapping mapping : taskConfig.getColumnMapping()) {
+            if(mapping.isPrimaryKey()) {
+                primaryKey = mapping.getHiveColumn();
+                sb.append(primaryKey) .append(" in ");
+                break;
+            }
+        }
+        if(StringUtils.isBlank(primaryKey)) {
+            logger.error("no primaryKey from update!");
+        }
+        sb.append("( select ").append(primaryKey).append(" from ").append(tmpTableName).append(")");
+        return sb.toString();
+    }
+
+    protected static void updateTableStatus(String tableName) {
+        HbaseMetaManager.updateStatus(tableName);
     }
 }

@@ -2,6 +2,8 @@ package com.shuyun.datasync.core.template.strategy;
 
 import com.shuyun.datasync.domain.ColumnMapping;
 import com.shuyun.datasync.domain.TaskConfig;
+import com.shuyun.datasync.utils.ZKLock;
+import com.shuyun.datasync.utils.ZKUtil;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -34,9 +36,14 @@ public class CoverSyncStrategySerial extends CoverSyncStrategy {
         StructType schema = createSchema(tc);
 
         for(String table : tables) {
+            ZKLock lock = ZKUtil.lock(table);
+
             JavaRDD<Row> dataRDD = createHbaseRDD(sc, table, taskConfigBroad);
 
             coverData(spark, dataRDD, schema, tc, table);
+
+            updateTableStatus(table);
+            lock.release();
         }
         spark.close();
         spark.stop();
