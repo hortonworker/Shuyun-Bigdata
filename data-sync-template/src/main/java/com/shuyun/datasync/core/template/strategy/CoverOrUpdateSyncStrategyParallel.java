@@ -36,7 +36,7 @@ public class CoverOrUpdateSyncStrategyParallel extends CoverOrUpdateSyncStrategy
 
         SparkSession spark = createSparkSession(tc);
 
-        JavaSparkContext sc = new JavaSparkContext(spark.sparkContext());
+        JavaSparkContext sc = getSparkContext(spark, tc);
 
         Broadcast<TaskConfig> taskConfigBroad = sc.broadcast(tc);
 

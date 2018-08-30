@@ -1,12 +1,11 @@
 package com.shuyun.datasync.core.template;
 
-import com.shuyun.datasync.common.SyncStrategyType;
 import com.shuyun.datasync.core.HbaseMetaManager;
 import com.shuyun.datasync.core.TaskConfigManager;
 import com.shuyun.datasync.core.template.strategy.CoverOrUpdateSyncStrategyParallel;
 import com.shuyun.datasync.core.template.strategy.CoverOrUpdateSyncStrategySerial;
-import com.shuyun.datasync.core.template.strategy.CoverSyncStrategySerial;
 import com.shuyun.datasync.core.template.strategy.CoverSyncStrategyParallel;
+import com.shuyun.datasync.core.template.strategy.CoverSyncStrategySerial;
 import com.shuyun.datasync.domain.TaskConfig;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;

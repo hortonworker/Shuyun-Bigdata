@@ -40,6 +40,16 @@ public class CoverSyncStrategy {
 
     private static Logger logger = Logger.getLogger(CoverSyncStrategy.class);
 
+    protected static JavaSparkContext getSparkContext(final SparkSession spark, final TaskConfig tc) {
+        JavaSparkContext sc = new JavaSparkContext(spark.sparkContext());
+        if(MapUtils.isNotEmpty(tc.getSparkConfigProperties())) {
+            for(String key : tc.getSparkConfigProperties().keySet()) {
+                sc.getConf().set(key, tc.getSparkConfigProperties().get(key));
+            }
+        }
+        return sc;
+    }
+
     protected static SparkSession createSparkSession(final TaskConfig tc) {
         String forceBucket = "false";
         if(StringUtils.isNotBlank(tc.getBucketColumn())) {
