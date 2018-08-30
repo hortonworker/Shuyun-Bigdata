@@ -68,6 +68,9 @@ public class CoverSyncStrategy {
     }
 
     protected static void updateData(final SparkSession spark, final JavaRDD<Row> dataRDD, final StructType schema, final TaskConfig tc, final String table) {
+        String createSQL = makeCreateSQL(tc, table);
+        spark.sql(createSQL);
+
         String tmpTableName = table + "_tmp";
 
         Dataset stuDf = spark.createDataFrame(dataRDD, schema);
@@ -81,12 +84,10 @@ public class CoverSyncStrategy {
 
     protected static void coverData(final SparkSession spark, final JavaRDD<Row> dataRDD, final StructType schema, final TaskConfig tc, final String table) {
         String createSQL = makeCreateSQL(tc, table);
-        logger.info(createSQL);
         spark.sql(createSQL);
 
         String tmpTableName = table + "_tmp";
         String insertSQL = makeInsertSQL(tc, table, tmpTableName, true);
-        logger.info(insertSQL);
 
         Dataset stuDf = spark.createDataFrame(dataRDD, schema);
         stuDf.printSchema();
@@ -149,7 +150,7 @@ public class CoverSyncStrategy {
         if(MapUtils.isNotEmpty(taskConfig.getTblproperties())) {
             sb.append(" tblproperties (");
             for(String key : taskConfig.getTblproperties().keySet()) {
-                sb.append("\"").append(key).append("\"");
+                sb.append("\"").append(key).append("\"=");
                 sb.append("\"").append(taskConfig.getTblproperties().get(key)).append("\"");
                 sb.append(",");
             }
