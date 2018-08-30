@@ -30,6 +30,11 @@ public class CoverSyncStrategySerial extends CoverSyncStrategy {
         SparkSession spark = createSparkSession(tc);
 
         JavaSparkContext sc = new JavaSparkContext(spark.sparkContext());
+        if(MapUtils.isNotEmpty(tc.getSparkConfigProperties())) {
+            for(String key : tc.getSparkConfigProperties().keySet()) {
+                sc.getConf().set(key, tc.getSparkConfigProperties().get(key));
+            }
+        }
 
         Broadcast<TaskConfig> taskConfigBroad = sc.broadcast(tc);
 
