@@ -6,6 +6,7 @@ import com.shuyun.datasync.utils.ZKUtil;
 import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -51,7 +52,9 @@ public class CoverOrUpdateSyncStrategySerial extends CoverOrUpdateSyncStrategy {
         for(String tableName : udpateTables) {
             ZKLock lock = ZKUtil.lock(tableName);
 
-            JavaRDD<Row> dataRDD = createHbaseRDD(sc, tableName, taskConfigBroad);
+            //JavaRDD<Row> dataRDD = createHbaseRDD(sc, tableName, taskConfigBroad);
+
+            JavaRDD<Row> dataRDD = createHbaseRDD(sc, "increment_"+tableName, taskConfigBroad);
 
             updateData(spark, dataRDD, schema, tc, tableName);
             updateTableStatus(tableName);

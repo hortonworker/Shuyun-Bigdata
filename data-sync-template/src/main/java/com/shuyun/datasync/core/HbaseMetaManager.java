@@ -28,7 +28,7 @@ public class HbaseMetaManager {
             client = new HBaseClient();
             Table table =  client.getTable(TableName.valueOf(AppConfiguration.get("hbase.data.status.table.name")));
             Put put = new Put(Bytes.toBytes(tableName));
-            put.addColumn(Bytes.toBytes("f1"), Bytes.toBytes("status"), Bytes.toBytes(0));
+            put.addColumn(Bytes.toBytes("f1"), Bytes.toBytes("status"), Bytes.toBytes("0"));
             table.put(put);
         } catch (Exception e) {
             e.printStackTrace();

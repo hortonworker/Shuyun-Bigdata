@@ -51,15 +51,13 @@ public class CoverSyncStrategy {
     }
 
     protected static SparkSession createSparkSession(final TaskConfig tc) {
-        String forceBucket = "false";
-        if(StringUtils.isNotBlank(tc.getBucketColumn())) {
-            forceBucket = "true";
-        }
         SparkSession.Builder builder = SparkSession
                 .builder()
                 .appName(tc.getTaskName())
                 .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-                .config("hive.enforce.bucketing", forceBucket);
+                .config("hive.enforce.bucketing", "false")
+                .config("hive.enforce.sorting", "false")
+                .config("hive.exec.dynamic.partition.mode", "nonstrict");
         if(MapUtils.isNotEmpty(tc.getSparkConfigProperties())) {
             for(String key : tc.getSparkConfigProperties().keySet()) {
                 builder.config(key, tc.getSparkConfigProperties().get(key));
@@ -87,8 +85,9 @@ public class CoverSyncStrategy {
         stuDf.printSchema();
         stuDf.createOrReplaceTempView(tmpTableName);
 
+        spark.sql("set hive.enforce.bucketing=true");
         spark.sql(makeDeleteSQL(tc, table, tmpTableName));
-
+        spark.sql("set hive.enforce.bucketing=false");
         spark.sql(makeInsertSQL(tc, table, tmpTableName));
     }
 
@@ -136,6 +135,7 @@ public class CoverSyncStrategy {
 
         });
         return dataRDD;
+
     }
 
     protected static String makeCreateSQL(TaskConfig taskConfig, String tableName) {
@@ -191,7 +191,7 @@ public class CoverSyncStrategy {
 
     protected static String makeDeleteSQL(TaskConfig taskConfig, String tableName, String tmpTableName) {
         StringBuffer sb = new StringBuffer("delete from ");
-        sb.append(tableName).append(" where ");
+        sb.append(taskConfig.getDatabase()).append(".").append(tableName).append(" where ");
         String primaryKey = null;
         for(ColumnMapping mapping : taskConfig.getColumnMapping()) {
             if(mapping.isPrimaryKey()) {
