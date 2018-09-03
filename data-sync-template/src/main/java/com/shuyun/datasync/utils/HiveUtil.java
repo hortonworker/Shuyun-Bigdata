@@ -10,7 +10,7 @@ import java.sql.SQLException;
 public class HiveUtil {
     static {
         try {
-            Class.forName("org.apache.hadoop.hive.jdbc.HiveDriver");
+            Class.forName("org.apache.hive.jdbc.HiveDriver");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
             System.exit(1);

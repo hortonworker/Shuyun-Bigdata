@@ -82,15 +82,14 @@ public class CoverSyncStrategy {
         String createSQL = makeCreateSQL(tc, table);
         spark.sql(createSQL);
 
-        String tmpTableName = table + "_tmp";
+        HiveSession session = HiveUtil.createHiveSession();
+        session.execute(makeDeleteSQL(dataRDD, tc, table));
+        session.close();
 
+        String tmpTableName = table + "_tmp";
         Dataset stuDf = spark.createDataFrame(dataRDD, schema);
         stuDf.printSchema();
         stuDf.createOrReplaceTempView(tmpTableName);
-
-        HiveSession session = HiveUtil.createHiveSession();
-        session.execute(makeDeleteSQL(dataRDD, tc, table, tmpTableName));
-        session.close();
 
         spark.sql("set hive.enforce.bucketing=false");
         spark.sql(makeInsertSQL(tc, table, tmpTableName));
@@ -194,37 +193,34 @@ public class CoverSyncStrategy {
         return insertSQL;
     }
 
-    protected static List<String> makeDeleteSQL(final JavaRDD<Row> dataRDD, TaskConfig taskConfig, String tableName, String tmpTableName) {
+    protected static List<String> makeDeleteSQL(final JavaRDD<Row> dataRDD, TaskConfig taskConfig, String tableName) {
         List<String> sqls = new ArrayList<String>();
         sqls.add("set hive.enforce.bucketing=true");
         sqls.add("set hive.exec.dynamic.partition.mode=nonstrict");
 
 
-        StringBuffer sb = new StringBuffer("delete from ");
+        final StringBuffer sb = new StringBuffer("delete from ");
         sb.append(taskConfig.getDatabase()).append(".").append(tableName).append(" where ");
         String primaryKey = null;
         int tmpPrimaryKeyindex = 0;
         for(ColumnMapping mapping : taskConfig.getColumnMapping()) {
-            tmpPrimaryKeyindex ++;
             if(mapping.isPrimaryKey()) {
                 primaryKey = mapping.getHiveColumn();
                 sb.append(primaryKey) .append(" in ");
                 break;
             }
+            tmpPrimaryKeyindex ++;
         }
         if(StringUtils.isBlank(primaryKey)) {
             logger.error("no primaryKey from update!");
         }
         sb.append("( ");
         final int tmpIndex = tmpPrimaryKeyindex;
-        dataRDD.foreach(new VoidFunction<Row>() {
-            @Override
-            public void call(Row row) throws Exception {
-                Object obj = row.get(tmpIndex);
-                //如果后续支持基础类型再进行扩展
-                sb.append("'").append(obj.toString()).append("',");
-            }
-        });
+        for(Row row : dataRDD.collect()) {
+            Object obj = row.get(tmpIndex);
+            //如果后续支持基础类型再进行扩展
+            sb.append("'").append(obj.toString()).append("',");
+        }
 
         sb.deleteCharAt(sb.length() - 1);
 
