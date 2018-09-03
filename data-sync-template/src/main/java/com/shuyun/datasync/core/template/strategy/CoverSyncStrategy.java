@@ -57,16 +57,19 @@ public class CoverSyncStrategy {
         SparkSession.Builder builder = SparkSession
                 .builder()
                 .appName(tc.getTaskName())
-                .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-                .config("hive.enforce.bucketing", "false")
-                .config("hive.enforce.sorting", "false")
-                .config("hive.exec.dynamic.partition.mode", "nonstrict");
+                .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
         if(MapUtils.isNotEmpty(tc.getSparkConfigProperties())) {
             for(String key : tc.getSparkConfigProperties().keySet()) {
                 builder.config(key, tc.getSparkConfigProperties().get(key));
             }
         }
-        return builder.enableHiveSupport().getOrCreate();
+        SparkSession spark = builder.enableHiveSupport().getOrCreate();
+        if(StringUtils.isNotBlank(tc.getBucketColumn())) {
+            spark.sql("set hive.enforce.bucketing=false");
+            spark.sql("set hive.enforce.sorting=false");
+            spark.sql("set hive.exec.dynamic.partition.mode=nonstrict");
+        }
+        return spark;
     }
 
     protected static StructType createSchema(final TaskConfig tc) {
@@ -91,7 +94,6 @@ public class CoverSyncStrategy {
         stuDf.printSchema();
         stuDf.createOrReplaceTempView(tmpTableName);
 
-        spark.sql("set hive.enforce.bucketing=false");
         spark.sql(makeInsertSQL(tc, table, tmpTableName));
     }
 
@@ -197,7 +199,6 @@ public class CoverSyncStrategy {
         List<String> sqls = new ArrayList<String>();
         sqls.add("set hive.enforce.bucketing=true");
         sqls.add("set hive.exec.dynamic.partition.mode=nonstrict");
-
 
         final StringBuffer sb = new StringBuffer("delete from ");
         sb.append(taskConfig.getDatabase()).append(".").append(tableName).append(" where ");
