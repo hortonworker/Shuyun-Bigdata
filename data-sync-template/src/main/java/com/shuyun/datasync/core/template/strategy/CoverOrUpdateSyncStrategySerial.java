@@ -55,9 +55,14 @@ public class CoverOrUpdateSyncStrategySerial extends CoverOrUpdateSyncStrategy {
             //JavaRDD<Row> dataRDD = createHbaseRDD(sc, tableName, taskConfigBroad);
 
             JavaRDD<Row> dataRDD = createHbaseRDD(sc, "increment_"+tableName, taskConfigBroad);
+            try {
+                updateData(spark, dataRDD, schema, tc, tableName);
+                updateTableStatus(tableName);
+            } catch (Exception e) {
+                e.printStackTrace();
+                logger.error("update [" + tableName + "] table error!", e);
+            }
 
-            updateData(spark, dataRDD, schema, tc, tableName);
-            updateTableStatus(tableName);
             lock.release();
         }
         spark.close();

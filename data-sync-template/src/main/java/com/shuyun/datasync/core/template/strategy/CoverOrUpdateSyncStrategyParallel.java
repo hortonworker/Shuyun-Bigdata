@@ -70,9 +70,14 @@ public class CoverOrUpdateSyncStrategyParallel extends CoverOrUpdateSyncStrategy
                 public void run() {
                     ZKLock lock = ZKUtil.lock(tableName);
                     JavaRDD<Row> dataRDD = rddMap.get(tableName);
+                    try {
+                        updateData(spark, dataRDD, schema, tc, tableName);
+                        updateTableStatus(tableName);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        logger.error("update [" + tableName + "] table error!", e);
+                    }
 
-                    updateData(spark, dataRDD, schema, tc, tableName);
-                    updateTableStatus(tableName);
                     lock.release();
                 }
             });

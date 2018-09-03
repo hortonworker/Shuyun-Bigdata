@@ -6,6 +6,8 @@ import com.shuyun.datasync.core.HbaseMetaManager;
 import com.shuyun.datasync.domain.ColumnMapping;
 import com.shuyun.datasync.domain.TaskConfig;
 import com.shuyun.datasync.utils.DataTypeConvert;
+import com.shuyun.datasync.utils.HiveSession;
+import com.shuyun.datasync.utils.HiveUtil;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -20,6 +22,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -75,7 +78,7 @@ public class CoverSyncStrategy {
         return DataTypes.createStructType(structFields);
     }
 
-    protected static void updateData(final SparkSession spark, final JavaRDD<Row> dataRDD, final StructType schema, final TaskConfig tc, final String table) {
+    protected static void updateData(final SparkSession spark, final JavaRDD<Row> dataRDD, final StructType schema, final TaskConfig tc, final String table) throws Exception {
         String createSQL = makeCreateSQL(tc, table);
         spark.sql(createSQL);
 
@@ -85,8 +88,10 @@ public class CoverSyncStrategy {
         stuDf.printSchema();
         stuDf.createOrReplaceTempView(tmpTableName);
 
-        spark.sql("set hive.enforce.bucketing=true");
-        spark.sql(makeDeleteSQL(tc, table, tmpTableName));
+        HiveSession session = HiveUtil.createHiveSession();
+        session.execute(makeDeleteSQL(dataRDD, tc, table, tmpTableName));
+        session.close();
+
         spark.sql("set hive.enforce.bucketing=false");
         spark.sql(makeInsertSQL(tc, table, tmpTableName));
     }
@@ -189,11 +194,18 @@ public class CoverSyncStrategy {
         return insertSQL;
     }
 
-    protected static String makeDeleteSQL(TaskConfig taskConfig, String tableName, String tmpTableName) {
+    protected static List<String> makeDeleteSQL(final JavaRDD<Row> dataRDD, TaskConfig taskConfig, String tableName, String tmpTableName) {
+        List<String> sqls = new ArrayList<String>();
+        sqls.add("set hive.enforce.bucketing=true");
+        sqls.add("set hive.exec.dynamic.partition.mode=nonstrict");
+
+
         StringBuffer sb = new StringBuffer("delete from ");
         sb.append(taskConfig.getDatabase()).append(".").append(tableName).append(" where ");
         String primaryKey = null;
+        int tmpPrimaryKeyindex = 0;
         for(ColumnMapping mapping : taskConfig.getColumnMapping()) {
+            tmpPrimaryKeyindex ++;
             if(mapping.isPrimaryKey()) {
                 primaryKey = mapping.getHiveColumn();
                 sb.append(primaryKey) .append(" in ");
@@ -203,10 +215,26 @@ public class CoverSyncStrategy {
         if(StringUtils.isBlank(primaryKey)) {
             logger.error("no primaryKey from update!");
         }
-        sb.append("( select ").append(primaryKey).append(" from ").append(tmpTableName).append(")");
+        sb.append("( ");
+        final int tmpIndex = tmpPrimaryKeyindex;
+        dataRDD.foreach(new VoidFunction<Row>() {
+            @Override
+            public void call(Row row) throws Exception {
+                Object obj = row.get(tmpIndex);
+                //如果后续支持基础类型再进行扩展
+                sb.append("'").append(obj.toString()).append("',");
+            }
+        });
+
+        sb.deleteCharAt(sb.length() - 1);
+
+        sb.append(")");
         String deleteSQL = sb.toString();
         logger.info(deleteSQL);
-        return deleteSQL;
+
+        sqls.add(deleteSQL);
+
+        return sqls;
     }
 
     protected static void updateTableStatus(String tableName) {
