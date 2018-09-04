@@ -1,13 +1,20 @@
 package com.shuyun.datasync.core.template.strategy;
 
 import com.shuyun.datasync.common.AppConfiguration;
+import com.shuyun.datasync.domain.TaskConfig;
 import com.shuyun.datasync.utils.HBaseClient;
+import com.shuyun.datasync.utils.ZKLock;
+import com.shuyun.datasync.utils.ZKUtil;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.types.StructType;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,6 +25,19 @@ import java.util.List;
 public class CoverOrUpdateSyncStrategy extends CoverSyncStrategy {
 
     private static Logger logger = Logger.getLogger(CoverOrUpdateSyncStrategy.class);
+
+    protected static void handleUpdate(SparkSession spark, JavaRDD<Row> dataRDD, TaskConfig tc, String tableName, StructType schema) {
+        ZKLock lock = ZKUtil.lock(tableName);
+        try {
+            updateData(spark, dataRDD, schema, tc, tableName);
+            updateTableStatus(tableName);
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("update [" + tableName + "] table error!", e);
+        }
+
+        lock.release();
+    }
 
     protected static void splitCoverUpdate(List<String> tables, List<String> udpateTables, List<String> coverTables) {
 

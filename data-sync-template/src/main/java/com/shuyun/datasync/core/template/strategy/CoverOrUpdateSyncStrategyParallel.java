@@ -53,12 +53,8 @@ public class CoverOrUpdateSyncStrategyParallel extends CoverOrUpdateSyncStrategy
             es.execute(new Runnable() {
                 @Override
                 public void run() {
-                    ZKLock lock = ZKUtil.lock(tableName);
                     JavaRDD<Row> dataRDD = rddMap.get(tableName);
-
-                    coverData(spark, dataRDD, schema, tc, tableName);
-                    updateTableStatus(tableName);
-                    lock.release();
+                    handleCover(spark, dataRDD, tc, tableName, schema);
                 }
             });
         }
@@ -68,17 +64,8 @@ public class CoverOrUpdateSyncStrategyParallel extends CoverOrUpdateSyncStrategy
             es.execute(new Runnable() {
                 @Override
                 public void run() {
-                    ZKLock lock = ZKUtil.lock(tableName);
                     JavaRDD<Row> dataRDD = rddMap.get(tableName);
-                    try {
-                        updateData(spark, dataRDD, schema, tc, tableName);
-                        updateTableStatus(tableName);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        logger.error("update [" + tableName + "] table error!", e);
-                    }
-
-                    lock.release();
+                    handleUpdate(spark, dataRDD, tc, tableName, schema);
                 }
             });
         }

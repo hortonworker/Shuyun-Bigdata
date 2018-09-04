@@ -44,12 +44,8 @@ public class CoverSyncStrategyParallel extends CoverSyncStrategy {
             es.execute(new Runnable() {
                 @Override
                 public void run() {
-                    ZKLock lock = ZKUtil.lock(table);
                     JavaRDD<Row> dataRDD = rddMap.get(table);
-
-                    coverData(spark, dataRDD, schema, tc, table);
-                    updateTableStatus(table);
-                    lock.release();
+                    handleCover(spark, dataRDD, tc, table, schema);
                 }
             });
         }

@@ -39,31 +39,16 @@ public class CoverOrUpdateSyncStrategySerial extends CoverOrUpdateSyncStrategy {
 
         //覆盖处理
         for(String tableName : coverTables) {
-            ZKLock lock = ZKUtil.lock(tableName);
 
             JavaRDD<Row> dataRDD = createHbaseRDD(sc, tableName, taskConfigBroad);
 
-            coverData(spark, dataRDD, schema, tc, tableName);
-            updateTableStatus(tableName);
-            lock.release();
+            handleCover(spark, dataRDD, tc, tableName, schema);
         }
 
         //增量update
         for(String tableName : udpateTables) {
-            ZKLock lock = ZKUtil.lock(tableName);
-
-            //JavaRDD<Row> dataRDD = createHbaseRDD(sc, tableName, taskConfigBroad);
-
             JavaRDD<Row> dataRDD = createHbaseRDD(sc, "increment_"+tableName, taskConfigBroad);
-            try {
-                updateData(spark, dataRDD, schema, tc, tableName);
-                updateTableStatus(tableName);
-            } catch (Exception e) {
-                e.printStackTrace();
-                logger.error("update [" + tableName + "] table error!", e);
-            }
-
-            lock.release();
+            handleUpdate(spark, dataRDD, tc, tableName, schema);
         }
         spark.close();
         spark.stop();

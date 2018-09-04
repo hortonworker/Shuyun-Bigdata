@@ -29,14 +29,8 @@ public class CoverSyncStrategySerial extends CoverSyncStrategy {
         StructType schema = createSchema(tc);
 
         for(String table : tables) {
-            ZKLock lock = ZKUtil.lock(table);
-
             JavaRDD<Row> dataRDD = createHbaseRDD(sc, table, taskConfigBroad);
-
-            coverData(spark, dataRDD, schema, tc, table);
-
-            updateTableStatus(table);
-            lock.release();
+            handleCover(spark, dataRDD, tc, table, schema);
         }
         spark.close();
         spark.stop();

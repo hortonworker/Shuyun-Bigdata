@@ -5,9 +5,7 @@ import com.shuyun.datasync.common.FileType;
 import com.shuyun.datasync.core.HbaseMetaManager;
 import com.shuyun.datasync.domain.ColumnMapping;
 import com.shuyun.datasync.domain.TaskConfig;
-import com.shuyun.datasync.utils.DataTypeConvert;
-import com.shuyun.datasync.utils.HiveSession;
-import com.shuyun.datasync.utils.HiveUtil;
+import com.shuyun.datasync.utils.*;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -42,6 +40,19 @@ import java.util.List;
 public class CoverSyncStrategy {
 
     private static Logger logger = Logger.getLogger(CoverSyncStrategy.class);
+
+    protected static void handleCover(SparkSession spark, JavaRDD<Row> dataRDD , TaskConfig tc,String table, StructType schema) {
+        ZKLock lock = ZKUtil.lock(table);
+
+        try {
+            coverData(spark, dataRDD, schema, tc, table);
+            updateTableStatus(table);
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("cover table[" + table + "] error", e);
+        }
+        lock.release();
+    }
 
     protected static JavaSparkContext getSparkContext(final SparkSession spark, final TaskConfig tc) {
         JavaSparkContext sc = new JavaSparkContext(spark.sparkContext());
@@ -82,8 +93,7 @@ public class CoverSyncStrategy {
     }
 
     protected static void updateData(final SparkSession spark, final JavaRDD<Row> dataRDD, final StructType schema, final TaskConfig tc, final String table) throws Exception {
-        String createSQL = makeCreateSQL(tc, table);
-        spark.sql(createSQL);
+        executeCreateSQL(tc, table);
 
         HiveSession session = HiveUtil.createHiveSession();
         session.execute(makeDeleteSQL(dataRDD, tc, table));
@@ -97,9 +107,8 @@ public class CoverSyncStrategy {
         spark.sql(makeInsertSQL(tc, table, tmpTableName));
     }
 
-    protected static void coverData(final SparkSession spark, final JavaRDD<Row> dataRDD, final StructType schema, final TaskConfig tc, final String table) {
-        String createSQL = makeCreateSQL(tc, table);
-        spark.sql(createSQL);
+    protected static void coverData(final SparkSession spark, final JavaRDD<Row> dataRDD, final StructType schema, final TaskConfig tc, final String table) throws Exception {
+        executeCreateSQL(tc, table);
 
         String tmpTableName = table + "_tmp";
         String insertSQL = makeInsertSQL(tc, table, tmpTableName, true);
@@ -144,7 +153,7 @@ public class CoverSyncStrategy {
 
     }
 
-    protected static String makeCreateSQL(TaskConfig taskConfig, String tableName) {
+    protected static void executeCreateSQL(TaskConfig taskConfig, String tableName) throws Exception {
         StringBuffer sb = new StringBuffer("create table if not exists ");
         sb.append(taskConfig.getDatabase()).append(".").append(tableName);
         sb.append("(");
@@ -175,7 +184,9 @@ public class CoverSyncStrategy {
         }
         String createSQL = sb.toString();
         logger.info(createSQL);
-        return createSQL;
+        HiveSession session = HiveUtil.createHiveSession();
+        session.execute(createSQL);
+        session.close();
     }
 
     protected static String makeInsertSQL(TaskConfig taskConfig, String tableName, String tmpTableName) {
@@ -199,7 +210,39 @@ public class CoverSyncStrategy {
         List<String> sqls = new ArrayList<String>();
         sqls.add("set hive.enforce.bucketing=true");
         sqls.add("set hive.exec.dynamic.partition.mode=nonstrict");
+        /*final StringBuffer sb = new StringBuffer("insert overwrite table ");
+        sb.append(taskConfig.getDatabase()).append(".").append(tableName);
+        sb.append(" select * from ").append(taskConfig.getDatabase()).append(".").append(tableName).append(" where ");
+        String primaryKey = null;
+        int tmpPrimaryKeyindex = 0;
+        for(ColumnMapping mapping : taskConfig.getColumnMapping()) {
+            if(mapping.isPrimaryKey()) {
+                primaryKey = mapping.getHiveColumn();
+                sb.append(primaryKey) .append(" not in ");
+                break;
+            }
+            tmpPrimaryKeyindex ++;
+        }
+        if(StringUtils.isBlank(primaryKey)) {
+            logger.error("no primaryKey from update!");
+        }
+        sb.append("( ");
+        final int tmpIndex = tmpPrimaryKeyindex;
+        for(Row row : dataRDD.collect()) {
+            Object obj = row.get(tmpIndex);
+            //如果后续支持基础类型再进行扩展
+            sb.append("'").append(obj.toString()).append("',");
+        }
 
+        sb.deleteCharAt(sb.length() - 1);
+
+        sb.append(")");
+        String deleteSQL = sb.toString();
+        logger.info(deleteSQL);
+
+        sqls.add(deleteSQL);
+
+        return sqls;*/
         final StringBuffer sb = new StringBuffer("delete from ");
         sb.append(taskConfig.getDatabase()).append(".").append(tableName).append(" where ");
         String primaryKey = null;
