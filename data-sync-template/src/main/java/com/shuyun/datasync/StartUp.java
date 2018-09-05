@@ -2,6 +2,7 @@ package com.shuyun.datasync;
 
 import com.shuyun.datasync.common.AppConfiguration;
 import com.shuyun.datasync.core.template.TaskTemplate;
+import com.shuyun.datasync.utils.ZKUtil;
 import org.apache.log4j.Logger;
 
 /**
@@ -26,10 +27,13 @@ public class StartUp {
         AppConfiguration.loadConfiguration(runMode);
 
         try {
+            ZKUtil.init();
             TaskTemplate.execute(configId, runMode);
         } catch (Exception e) {
             logger.error("execute task error!", e);
             System.exit(1);
+        } finally {
+            ZKUtil.stop();
         }
 
     }

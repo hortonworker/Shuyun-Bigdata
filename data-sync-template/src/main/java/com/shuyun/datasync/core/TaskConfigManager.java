@@ -70,8 +70,13 @@ public class TaskConfigManager {
         config.setTableName("trade_.*");
         if(config.getId() == 1) {
             config.setSyncStrategy(SyncStrategyType.SERIAL_COVER_ALWAYS);
-        } else {
+        } else if(config.getId() == 2) {
             config.setSyncStrategy(SyncStrategyType.PARALLEL_COVER_ALWAYS);
+            config.setParallelSize(2);
+        } else if(config.getId() == 3) {
+            config.setSyncStrategy(SyncStrategyType.SERIAL_COVER_OR_UPDATE_BY_COUNT);
+        } else {
+            config.setSyncStrategy(SyncStrategyType.PARALLEL_COVER_OR_UPDATE_BY_COUNT);
             config.setParallelSize(2);
         }
         config.setDatabase("default");

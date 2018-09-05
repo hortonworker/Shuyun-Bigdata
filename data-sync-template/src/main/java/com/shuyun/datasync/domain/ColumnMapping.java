@@ -12,6 +12,7 @@ public class ColumnMapping implements Serializable {
     private String hbaseColumn;
     private String hiveColumn;
     private DataType type;
+    private boolean primaryKey = false;
 
     public ColumnMapping() {
     }
@@ -46,5 +47,13 @@ public class ColumnMapping implements Serializable {
 
     public void setType(DataType type) {
         this.type = type;
+    }
+
+    public boolean isPrimaryKey() {
+        return primaryKey;
+    }
+
+    public void setPrimaryKey(boolean primaryKey) {
+        this.primaryKey = primaryKey;
     }
 }
