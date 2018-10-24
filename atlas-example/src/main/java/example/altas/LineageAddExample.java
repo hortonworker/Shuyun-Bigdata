@@ -18,9 +18,7 @@ import org.apache.commons.lang.ArrayUtils;
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.*;
 
-import static org.apache.atlas.model.typedef.AtlasStructDef.AtlasConstraintDef.CONSTRAINT_PARAM_ATTRIBUTE;
-import static org.apache.atlas.model.typedef.AtlasStructDef.AtlasConstraintDef.CONSTRAINT_TYPE_INVERSE_REF;
-import static org.apache.atlas.model.typedef.AtlasStructDef.AtlasConstraintDef.CONSTRAINT_TYPE_OWNED_REF;
+import static org.apache.atlas.model.typedef.AtlasStructDef.AtlasConstraintDef.*;
 
 /**
  * A driver that sets up sample types and entities using v2 types and entity model for testing purposes.
@@ -29,21 +27,21 @@ public class LineageAddExample {
     public static final String ATLAS_REST_ADDRESS = "atlas.rest.address";
 
     //database
-    public static final String EXAMPLE_DB= "Example_DB";
+    public static final String EXAMPLE_DB = "Example_DB";
 
     //tables
     public static final String LOG_DAILY_MV = "log_daily_example_mv";
     public static final String LOG_MONTHLY_MV = "log_monthly_example_mv";
 
     //columns
-    public static final String TIME_ID_DATE_COLUMN               = "time_date_id";
-    public static final String TIME_ID_MONTH_COLUMN               = "time_month_id";
-    public static final String DAILY_MILE_COLUMN                 = "daily_mile";
-    public static final String DAILY_OIL_CONSUMPTION_COLUMN      = "daily_oil_consumption";
-    public static final String VEHICLE_IDENTIFY_NUMBER_MONTH_COLUMN    = "vin_month";
-    public static final String VEHICLE_IDENTIFY_NUMBER_DATE_COLUMN    = "vin_date";
-    public static final String MONTHLY_MILE_COLUMN               = "monthly_mile";
-    public static final String MONTHLY_OIL_CONSUMPTION_COLUMN    = "monthly_oil_consumption";
+    public static final String TIME_ID_DATE_COLUMN = "time_date_id";
+    public static final String TIME_ID_MONTH_COLUMN = "time_month_id";
+    public static final String DAILY_MILE_COLUMN = "daily_mile";
+    public static final String DAILY_OIL_CONSUMPTION_COLUMN = "daily_oil_consumption";
+    public static final String VEHICLE_IDENTIFY_NUMBER_MONTH_COLUMN = "vin_month";
+    public static final String VEHICLE_IDENTIFY_NUMBER_DATE_COLUMN = "vin_date";
+    public static final String MONTHLY_MILE_COLUMN = "monthly_mile";
+    public static final String MONTHLY_OIL_CONSUMPTION_COLUMN = "monthly_oil_consumption";
 
 
     //classification
@@ -54,13 +52,13 @@ public class LineageAddExample {
     public static final String AGGREGATION_PROCESS = "aggregation_from_daily_to_monthly";
 
     //types
-    public static final String DATABASE_TYPE               = "DB";
-    public static final String COLUMN_TYPE                 = "Column";
-    public static final String TABLE_TYPE                  = "Table";
-    public static final String LOAD_PROCESS_TYPE           = "LoadProcess";
+    public static final String DATABASE_TYPE = "DB";
+    public static final String COLUMN_TYPE = "Column";
+    public static final String TABLE_TYPE = "Table";
+    public static final String LOAD_PROCESS_TYPE = "LoadProcess";
 
-    public static final String[] TYPES = { DATABASE_TYPE, TABLE_TYPE, COLUMN_TYPE, LOAD_PROCESS_TYPE,
-            ETL_CLASSIFICATION, LOGDATA_CLASSIFICATION };
+    public static final String[] TYPES = {DATABASE_TYPE, TABLE_TYPE, COLUMN_TYPE, LOAD_PROCESS_TYPE,
+            ETL_CLASSIFICATION, LOGDATA_CLASSIFICATION};
 
     private final AtlasClientV2 atlasClientV2;
 
@@ -153,9 +151,9 @@ public class LineageAddExample {
         List<AtlasEntityDef> typeList = new LinkedList<AtlasEntityDef>();
 
 
-        if(atlasClientV2.typeWithNameExists(DATABASE_TYPE)==false){
+        if (atlasClientV2.typeWithNameExists(DATABASE_TYPE) == false) {
 
-            AtlasEntityDef dbType   = AtlasTypeUtil.createClassTypeDef(DATABASE_TYPE, DATABASE_TYPE, "1.0", ImmutableSet.of("DataSet"),
+            AtlasEntityDef dbType = AtlasTypeUtil.createClassTypeDef(DATABASE_TYPE, DATABASE_TYPE, "1.0", ImmutableSet.of("DataSet"),
                     AtlasTypeUtil.createUniqueRequiredAttrDef("name", "string"),
                     AtlasTypeUtil.createOptionalAttrDef("description", "string"),
                     AtlasTypeUtil.createOptionalAttrDef("locationUri", "string"),
@@ -166,23 +164,27 @@ public class LineageAddExample {
 
         }
 
-        if(atlasClientV2.typeWithNameExists(COLUMN_TYPE)==false){
+        if (atlasClientV2.typeWithNameExists(COLUMN_TYPE) == false) {
 
-            AtlasEntityDef colType  = AtlasTypeUtil.createClassTypeDef(COLUMN_TYPE, COLUMN_TYPE, "1.0", ImmutableSet.of("DataSet"),
+            AtlasEntityDef colType = AtlasTypeUtil.createClassTypeDef(COLUMN_TYPE, COLUMN_TYPE, "1.0", ImmutableSet.of("DataSet"),
                     AtlasTypeUtil.createUniqueRequiredAttrDef("name", "string"),
                     AtlasTypeUtil.createOptionalAttrDef("dataType", "string"),
                     AtlasTypeUtil.createOptionalAttrDef("comment", "string"),
                     AtlasTypeUtil.createOptionalAttrDefWithConstraint("table", TABLE_TYPE, CONSTRAINT_TYPE_INVERSE_REF,
-                            new HashMap<String, Object>() {{ put(CONSTRAINT_PARAM_ATTRIBUTE, "columns"); }}));
+                            new HashMap<String, Object>() {{
+                                put(CONSTRAINT_PARAM_ATTRIBUTE, "columns");
+                            }}));
 
-            colType.setOptions(new HashMap<String, String>() {{ put("schemaAttributes", "[\"description\", \"owner\", \"type\", \"comment\", \"position\"]"); }});
+            colType.setOptions(new HashMap<String, String>() {{
+                put("schemaAttributes", "[\"description\", \"owner\", \"type\", \"comment\", \"position\"]");
+            }});
 
             typeList.add(colType);
         }
 
-        if(atlasClientV2.typeWithNameExists(TABLE_TYPE)==false){
+        if (atlasClientV2.typeWithNameExists(TABLE_TYPE) == false) {
 
-            AtlasEntityDef tblType  = AtlasTypeUtil.createClassTypeDef(TABLE_TYPE, TABLE_TYPE, "1.0", ImmutableSet.of("DataSet"),
+            AtlasEntityDef tblType = AtlasTypeUtil.createClassTypeDef(TABLE_TYPE, TABLE_TYPE, "1.0", ImmutableSet.of("DataSet"),
                     AtlasTypeUtil.createUniqueRequiredAttrDef("name", "string"),
                     AtlasTypeUtil.createRequiredAttrDef("db", DATABASE_TYPE),
                     AtlasTypeUtil.createOptionalAttrDef("owner", "string"),
@@ -196,12 +198,14 @@ public class LineageAddExample {
                     AtlasTypeUtil.createRequiredListAttrDefWithConstraint("columns", AtlasBaseTypeDef.getArrayTypeName(COLUMN_TYPE),
                             CONSTRAINT_TYPE_OWNED_REF, null));
 
-            tblType.setOptions(new HashMap<String, String>() {{ put("schemaElementsAttribute", "columns"); }});
+            tblType.setOptions(new HashMap<String, String>() {{
+                put("schemaElementsAttribute", "columns");
+            }});
 
             typeList.add(tblType);
         }
 
-        if(atlasClientV2.typeWithNameExists(LOAD_PROCESS_TYPE)==false){
+        if (atlasClientV2.typeWithNameExists(LOAD_PROCESS_TYPE) == false) {
 
             AtlasEntityDef procType = AtlasTypeUtil.createClassTypeDef(LOAD_PROCESS_TYPE, LOAD_PROCESS_TYPE, "1.0", ImmutableSet.of("Process"),
                     AtlasTypeUtil.createUniqueRequiredAttrDef("name", "string"),
@@ -218,15 +222,15 @@ public class LineageAddExample {
 
         //tags definition
 
-        if(atlasClientV2.typeWithNameExists(ETL_CLASSIFICATION)==false){
-            AtlasClassificationDef etlClassifDef    = AtlasTypeUtil.createTraitTypeDef(ETL_CLASSIFICATION, "ETL Classification", "1.0", ImmutableSet.<String>of());
+        if (atlasClientV2.typeWithNameExists(ETL_CLASSIFICATION) == false) {
+            AtlasClassificationDef etlClassifDef = AtlasTypeUtil.createTraitTypeDef(ETL_CLASSIFICATION, "ETL Classification", "1.0", ImmutableSet.<String>of());
 
             classificationList.add(etlClassifDef);
         }
 
 
-        if(atlasClientV2.typeWithNameExists(LOGDATA_CLASSIFICATION)==false){
-            AtlasClassificationDef logClassifDef    = AtlasTypeUtil.createTraitTypeDef(LOGDATA_CLASSIFICATION, "LogData Classification", "1.0", ImmutableSet.<String>of());
+        if (atlasClientV2.typeWithNameExists(LOGDATA_CLASSIFICATION) == false) {
+            AtlasClassificationDef logClassifDef = AtlasTypeUtil.createTraitTypeDef(LOGDATA_CLASSIFICATION, "LogData Classification", "1.0", ImmutableSet.<String>of());
 
             classificationList.add(logClassifDef);
         }
@@ -242,16 +246,16 @@ public class LineageAddExample {
         System.out.println("\nCreating sample entities: ");
 
         // Database entities
-        AtlasEntity logDB     = createDatabase(EXAMPLE_DB, "sales database", "John ETL", "hdfs://host:8000/apps/warehouse/example");
+        AtlasEntity logDB = createDatabase(EXAMPLE_DB, "sales database", "John ETL", "hdfs://host:8000/apps/warehouse/example");
 
         // Column entities
         List<AtlasEntity> logColumns = ImmutableList.of(
-                createColumn(TIME_ID_DATE_COLUMN, "int","time id"),
-                createColumn(VEHICLE_IDENTIFY_NUMBER_DATE_COLUMN, "int","app id"),
+                createColumn(TIME_ID_DATE_COLUMN, "int", "time id"),
+                createColumn(VEHICLE_IDENTIFY_NUMBER_DATE_COLUMN, "int", "app id"),
                 createColumn(DAILY_MILE_COLUMN, "int", "machine id", LOGDATA_CLASSIFICATION),
                 createColumn(DAILY_OIL_CONSUMPTION_COLUMN, "string", "log data", LOGDATA_CLASSIFICATION));
 
-        List<AtlasEntity> salesFactColumns   = ImmutableList.of(
+        List<AtlasEntity> salesFactColumns = ImmutableList.of(
                 createColumn(TIME_ID_MONTH_COLUMN, "int", "time id"),
                 createColumn(VEHICLE_IDENTIFY_NUMBER_MONTH_COLUMN, "int", "product id"),
                 createColumn(MONTHLY_MILE_COLUMN, "int", "customer id", LOGDATA_CLASSIFICATION),
@@ -260,13 +264,13 @@ public class LineageAddExample {
         // Table entities
         AtlasEntity loggingDaily = createTable(LOG_DAILY_MV, "example log daily collect", logDB,
                 "Tim ETL", "Managed", logColumns, LOGDATA_CLASSIFICATION);
-        AtlasEntity loggingMonthly = createTable(LOG_MONTHLY_MV, "example log monthly collect", logDB,"Tim ETL", "Managed", salesFactColumns, LOGDATA_CLASSIFICATION);
+        AtlasEntity loggingMonthly = createTable(LOG_MONTHLY_MV, "example log monthly collect", logDB, "Tim ETL", "Managed", salesFactColumns, LOGDATA_CLASSIFICATION);
 
 
         // Process entities
         createProcess(AGGREGATION_PROCESS, "hive query for daily summary", "John ETL",
-                ImmutableList.of(loggingDaily),
-                ImmutableList.of(loggingMonthly),
+                        ImmutableList.of(loggingDaily),
+                        ImmutableList.of(loggingMonthly),
                 "create table as select ", "plan", "id", "graph", ETL_CLASSIFICATION);
     }
 
@@ -292,7 +296,7 @@ public class LineageAddExample {
         if (CollectionUtils.isNotEmpty(entities)) {
             AtlasEntity.AtlasEntityWithExtInfo getByGuidResponse = atlasClientV2.getEntityByGuid(entities.get(0).getGuid());
             ret = getByGuidResponse.getEntity();
-            System.out.println("Created entity of type [" + ret.getTypeName() + "], guid: " + ret.getGuid()+", name: "+ret.getAttribute("name"));
+            System.out.println("Created entity of type [" + ret.getTypeName() + "], guid: " + ret.getGuid() + ", name: " + ret.getAttribute("name"));
         }
 
         return ret;

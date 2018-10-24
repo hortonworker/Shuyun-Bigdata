@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,11 +22,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
-import org.apache.atlas.ApplicationProperties;
-import org.apache.atlas.AtlasClient;
-import org.apache.atlas.AtlasClientV2;
-import org.apache.atlas.AtlasException;
-import org.apache.atlas.AtlasServiceException;
+import org.apache.atlas.*;
 import org.apache.atlas.model.SearchFilter;
 import org.apache.atlas.model.discovery.AtlasSearchResult;
 import org.apache.atlas.model.discovery.AtlasSearchResult.AtlasFullTextResult;
@@ -40,12 +36,7 @@ import org.apache.atlas.model.instance.EntityMutations.EntityOperation;
 import org.apache.atlas.model.lineage.AtlasLineageInfo;
 import org.apache.atlas.model.lineage.AtlasLineageInfo.LineageDirection;
 import org.apache.atlas.model.lineage.AtlasLineageInfo.LineageRelation;
-import org.apache.atlas.model.typedef.AtlasBaseTypeDef;
-import org.apache.atlas.model.typedef.AtlasClassificationDef;
-import org.apache.atlas.model.typedef.AtlasEntityDef;
-import org.apache.atlas.model.typedef.AtlasEnumDef;
-import org.apache.atlas.model.typedef.AtlasStructDef;
-import org.apache.atlas.model.typedef.AtlasTypesDef;
+import org.apache.atlas.model.typedef.*;
 import org.apache.atlas.type.AtlasTypeUtil;
 import org.apache.atlas.utils.AuthenticationUtil;
 import org.apache.commons.collections.CollectionUtils;
@@ -53,74 +44,77 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.ArrayUtils;
 
 import javax.ws.rs.core.MultivaluedMap;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-import static org.apache.atlas.model.typedef.AtlasStructDef.AtlasConstraintDef.CONSTRAINT_PARAM_ATTRIBUTE;
-import static org.apache.atlas.model.typedef.AtlasStructDef.AtlasConstraintDef.CONSTRAINT_TYPE_INVERSE_REF;
-import static org.apache.atlas.model.typedef.AtlasStructDef.AtlasConstraintDef.CONSTRAINT_TYPE_OWNED_REF;
+import static org.apache.atlas.model.typedef.AtlasStructDef.AtlasConstraintDef.*;
 
 /**
  * A driver that sets up sample types and entities using v2 types and entity model for testing purposes.
  */
 public class QuickStartV2 {
-    public static final String ATLAS_REST_ADDRESS          = "atlas.rest.address";
+    public static final String ATLAS_REST_ADDRESS = "atlas.rest.address";
 
-    public static final String SALES_DB                    = "Sales";
-    public static final String REPORTING_DB                = "Reporting";
-    public static final String LOGGING_DB                  = "Logging";
+    public static final String SALES_DB = "Sales";
+    public static final String REPORTING_DB = "Reporting";
+    public static final String LOGGING_DB = "Logging";
 
-    public static final String SALES_FACT_TABLE            = "sales_fact";
-    public static final String PRODUCT_DIM_TABLE           = "product_dim";
-    public static final String CUSTOMER_DIM_TABLE          = "customer_dim";
-    public static final String TIME_DIM_TABLE              = "time_dim";
-    public static final String SALES_FACT_DAILY_MV_TABLE   = "sales_fact_daily_mv";
+    public static final String SALES_FACT_TABLE = "sales_fact";
+    public static final String PRODUCT_DIM_TABLE = "product_dim";
+    public static final String CUSTOMER_DIM_TABLE = "customer_dim";
+    public static final String TIME_DIM_TABLE = "time_dim";
+    public static final String SALES_FACT_DAILY_MV_TABLE = "sales_fact_daily_mv";
     public static final String SALES_FACT_MONTHLY_MV_TABLE = "sales_fact_monthly_mv";
-    public static final String LOG_FACT_DAILY_MV_TABLE     = "log_fact_daily_mv";
-    public static final String LOG_FACT_MONTHLY_MV_TABLE   = "logging_fact_monthly_mv";
+    public static final String LOG_FACT_DAILY_MV_TABLE = "log_fact_daily_mv";
+    public static final String LOG_FACT_MONTHLY_MV_TABLE = "logging_fact_monthly_mv";
 
-    public static final String TIME_ID_COLUMN              = "time_id";
-    public static final String PRODUCT_ID_COLUMN           = "product_id";
-    public static final String CUSTOMER_ID_COLUMN          = "customer_id";
-    public static final String APP_ID_COLUMN               = "app_id";
-    public static final String MACHINE_ID_COLUMN           = "machine_id";
-    public static final String PRODUCT_NAME_COLUMN         = "product_name";
-    public static final String BRAND_NAME_COLUMN           = "brand_name";
-    public static final String NAME_COLUMN                 = "name";
-    public static final String SALES_COLUMN                = "sales";
-    public static final String LOG_COLUMN                  = "log";
-    public static final String ADDRESS_COLUMN              = "address";
-    public static final String DAY_OF_YEAR_COLUMN          = "dayOfYear";
-    public static final String WEEKDAY_COLUMN              = "weekDay";
+    public static final String TIME_ID_COLUMN = "time_id";
+    public static final String PRODUCT_ID_COLUMN = "product_id";
+    public static final String CUSTOMER_ID_COLUMN = "customer_id";
+    public static final String APP_ID_COLUMN = "app_id";
+    public static final String MACHINE_ID_COLUMN = "machine_id";
+    public static final String PRODUCT_NAME_COLUMN = "product_name";
+    public static final String BRAND_NAME_COLUMN = "brand_name";
+    public static final String NAME_COLUMN = "name";
+    public static final String SALES_COLUMN = "sales";
+    public static final String LOG_COLUMN = "log";
+    public static final String ADDRESS_COLUMN = "address";
+    public static final String DAY_OF_YEAR_COLUMN = "dayOfYear";
+    public static final String WEEKDAY_COLUMN = "weekDay";
 
-    public static final String DIMENSION_CLASSIFICATION    = "Dimension";
-    public static final String FACT_CLASSIFICATION         = "Fact";
-    public static final String PII_CLASSIFICATION          = "PII";
-    public static final String METRIC_CLASSIFICATION       = "Metric";
-    public static final String ETL_CLASSIFICATION          = "ETL";
-    public static final String JDBC_CLASSIFICATION         = "JdbcAccess";
-    public static final String LOGDATA_CLASSIFICATION      = "Log Data";
+    public static final String DIMENSION_CLASSIFICATION = "Dimension";
+    public static final String FACT_CLASSIFICATION = "Fact";
+    public static final String PII_CLASSIFICATION = "PII";
+    public static final String METRIC_CLASSIFICATION = "Metric";
+    public static final String ETL_CLASSIFICATION = "ETL";
+    public static final String JDBC_CLASSIFICATION = "JdbcAccess";
+    public static final String LOGDATA_CLASSIFICATION = "Log Data";
 
-    public static final String LOAD_SALES_DAILY_PROCESS    = "loadSalesDaily";
-    public static final String LOAD_SALES_MONTHLY_PROCESS  = "loadSalesMonthly";
-    public static final String LOAD_LOGS_MONTHLY_PROCESS   = "loadLogsMonthly";
+    public static final String LOAD_SALES_DAILY_PROCESS = "loadSalesDaily";
+    public static final String LOAD_SALES_MONTHLY_PROCESS = "loadSalesMonthly";
+    public static final String LOAD_LOGS_MONTHLY_PROCESS = "loadLogsMonthly";
 
-    public static final String PRODUCT_DIM_VIEW            = "product_dim_view";
-    public static final String CUSTOMER_DIM_VIEW           = "customer_dim_view";
+    public static final String PRODUCT_DIM_VIEW = "product_dim_view";
+    public static final String CUSTOMER_DIM_VIEW = "customer_dim_view";
 
-    public static final String DATABASE_TYPE               = "DB";
-    public static final String COLUMN_TYPE                 = "Column";
-    public static final String TABLE_TYPE                  = "Table";
-    public static final String VIEW_TYPE                   = "View";
-    public static final String LOAD_PROCESS_TYPE           = "LoadProcess";
-    public static final String STORAGE_DESC_TYPE           = "StorageDesc";
+    public static final String DATABASE_TYPE = "DB";
+    public static final String COLUMN_TYPE = "Column";
+    public static final String TABLE_TYPE = "Table";
+    public static final String VIEW_TYPE = "View";
+    public static final String LOAD_PROCESS_TYPE = "LoadProcess";
+    public static final String STORAGE_DESC_TYPE = "StorageDesc";
 
-    public static final String[] TYPES = { DATABASE_TYPE, TABLE_TYPE, STORAGE_DESC_TYPE, COLUMN_TYPE, LOAD_PROCESS_TYPE,
+    public static final String[] TYPES = {DATABASE_TYPE, TABLE_TYPE, STORAGE_DESC_TYPE, COLUMN_TYPE, LOAD_PROCESS_TYPE,
             VIEW_TYPE, JDBC_CLASSIFICATION, ETL_CLASSIFICATION, METRIC_CLASSIFICATION,
-            PII_CLASSIFICATION, FACT_CLASSIFICATION, DIMENSION_CLASSIFICATION, LOGDATA_CLASSIFICATION };
+            PII_CLASSIFICATION, FACT_CLASSIFICATION, DIMENSION_CLASSIFICATION, LOGDATA_CLASSIFICATION};
+    private final AtlasClientV2 atlasClientV2;
+
+    QuickStartV2(String[] urls, String[] basicAuthUsernamePassword) {
+        atlasClientV2 = new AtlasClientV2(urls, basicAuthUsernamePassword);
+    }
+
+    QuickStartV2(String[] urls) throws AtlasException {
+        atlasClientV2 = new AtlasClientV2(urls);
+    }
 
     public static void main(String[] args) throws Exception {
         String[] basicAuthUsernamePassword = null;
@@ -173,17 +167,6 @@ public class QuickStartV2 {
         return urls;
     }
 
-    private final AtlasClientV2 atlasClientV2;
-
-    QuickStartV2(String[] urls, String[] basicAuthUsernamePassword) {
-        atlasClientV2 = new AtlasClientV2(urls,basicAuthUsernamePassword);
-    }
-
-    QuickStartV2(String[] urls) throws AtlasException {
-        atlasClientV2 = new AtlasClientV2(urls);
-    }
-
-
     void createTypes() throws Exception {
         AtlasTypesDef atlasTypesDef = createTypeDefinitions();
 
@@ -194,31 +177,37 @@ public class QuickStartV2 {
     }
 
     AtlasTypesDef createTypeDefinitions() throws Exception {
-        AtlasEntityDef dbType   = AtlasTypeUtil.createClassTypeDef(DATABASE_TYPE, DATABASE_TYPE, "1.0", null,
+        AtlasEntityDef dbType = AtlasTypeUtil.createClassTypeDef(DATABASE_TYPE, DATABASE_TYPE, "1.0", null,
                 AtlasTypeUtil.createUniqueRequiredAttrDef("name", "string"),
                 AtlasTypeUtil.createOptionalAttrDef("description", "string"),
                 AtlasTypeUtil.createOptionalAttrDef("locationUri", "string"),
                 AtlasTypeUtil.createOptionalAttrDef("owner", "string"),
                 AtlasTypeUtil.createOptionalAttrDef("createTime", "long"));
 
-        AtlasEntityDef sdType   = AtlasTypeUtil.createClassTypeDef(STORAGE_DESC_TYPE, STORAGE_DESC_TYPE, "1.0", null,
+        AtlasEntityDef sdType = AtlasTypeUtil.createClassTypeDef(STORAGE_DESC_TYPE, STORAGE_DESC_TYPE, "1.0", null,
                 AtlasTypeUtil.createOptionalAttrDefWithConstraint("table", TABLE_TYPE, CONSTRAINT_TYPE_INVERSE_REF,
-                        new HashMap<String, Object>() {{ put(CONSTRAINT_PARAM_ATTRIBUTE, "sd"); }}),
+                        new HashMap<String, Object>() {{
+                            put(CONSTRAINT_PARAM_ATTRIBUTE, "sd");
+                        }}),
                 AtlasTypeUtil.createOptionalAttrDef("location", "string"),
                 AtlasTypeUtil.createOptionalAttrDef("inputFormat", "string"),
                 AtlasTypeUtil.createOptionalAttrDef("outputFormat", "string"),
                 AtlasTypeUtil.createRequiredAttrDef("compressed", "boolean"));
 
-        AtlasEntityDef colType  = AtlasTypeUtil.createClassTypeDef(COLUMN_TYPE, COLUMN_TYPE, "1.0", null,
+        AtlasEntityDef colType = AtlasTypeUtil.createClassTypeDef(COLUMN_TYPE, COLUMN_TYPE, "1.0", null,
                 AtlasTypeUtil.createOptionalAttrDef("name", "string"),
                 AtlasTypeUtil.createOptionalAttrDef("dataType", "string"),
                 AtlasTypeUtil.createOptionalAttrDef("comment", "string"),
                 AtlasTypeUtil.createOptionalAttrDefWithConstraint("table", TABLE_TYPE, CONSTRAINT_TYPE_INVERSE_REF,
-                        new HashMap<String, Object>() {{ put(CONSTRAINT_PARAM_ATTRIBUTE, "columns"); }}));
+                        new HashMap<String, Object>() {{
+                            put(CONSTRAINT_PARAM_ATTRIBUTE, "columns");
+                        }}));
 
-        colType.setOptions(new HashMap<String, String>() {{ put("schemaAttributes", "[\"name\", \"description\", \"owner\", \"type\", \"comment\", \"position\"]"); }});
+        colType.setOptions(new HashMap<String, String>() {{
+            put("schemaAttributes", "[\"name\", \"description\", \"owner\", \"type\", \"comment\", \"position\"]");
+        }});
 
-        AtlasEntityDef tblType  = AtlasTypeUtil.createClassTypeDef(TABLE_TYPE, TABLE_TYPE, "1.0", ImmutableSet.of("DataSet"),
+        AtlasEntityDef tblType = AtlasTypeUtil.createClassTypeDef(TABLE_TYPE, TABLE_TYPE, "1.0", ImmutableSet.of("DataSet"),
                 AtlasTypeUtil.createRequiredAttrDef("db", DATABASE_TYPE),
                 AtlasTypeUtil.createRequiredAttrDefWithConstraint("sd", STORAGE_DESC_TYPE, CONSTRAINT_TYPE_OWNED_REF, null),
                 AtlasTypeUtil.createOptionalAttrDef("owner", "string"),
@@ -232,7 +221,9 @@ public class QuickStartV2 {
                 AtlasTypeUtil.createRequiredListAttrDefWithConstraint("columns", AtlasBaseTypeDef.getArrayTypeName(COLUMN_TYPE),
                         CONSTRAINT_TYPE_OWNED_REF, null));
 
-        tblType.setOptions(new HashMap<String, String>() {{ put("schemaElementsAttribute", "columns"); }});
+        tblType.setOptions(new HashMap<String, String>() {{
+            put("schemaElementsAttribute", "columns");
+        }});
 
         AtlasEntityDef procType = AtlasTypeUtil.createClassTypeDef(LOAD_PROCESS_TYPE, LOAD_PROCESS_TYPE, "1.0", ImmutableSet.of("Process"),
                 AtlasTypeUtil.createOptionalAttrDef("userName", "string"),
@@ -249,13 +240,13 @@ public class QuickStartV2 {
 
         //tags definition
 
-        AtlasClassificationDef dimClassifDef    = AtlasTypeUtil.createTraitTypeDef(DIMENSION_CLASSIFICATION,  "Dimension Classification", "1.0", ImmutableSet.<String>of());
-        AtlasClassificationDef factClassifDef   = AtlasTypeUtil.createTraitTypeDef(FACT_CLASSIFICATION, "Fact Classification", "1.0", ImmutableSet.<String>of());
-        AtlasClassificationDef piiClassifDef    = AtlasTypeUtil.createTraitTypeDef(PII_CLASSIFICATION, "PII Classification", "1.0", ImmutableSet.<String>of());
+        AtlasClassificationDef dimClassifDef = AtlasTypeUtil.createTraitTypeDef(DIMENSION_CLASSIFICATION, "Dimension Classification", "1.0", ImmutableSet.<String>of());
+        AtlasClassificationDef factClassifDef = AtlasTypeUtil.createTraitTypeDef(FACT_CLASSIFICATION, "Fact Classification", "1.0", ImmutableSet.<String>of());
+        AtlasClassificationDef piiClassifDef = AtlasTypeUtil.createTraitTypeDef(PII_CLASSIFICATION, "PII Classification", "1.0", ImmutableSet.<String>of());
         AtlasClassificationDef metricClassifDef = AtlasTypeUtil.createTraitTypeDef(METRIC_CLASSIFICATION, "Metric Classification", "1.0", ImmutableSet.<String>of());
-        AtlasClassificationDef etlClassifDef    = AtlasTypeUtil.createTraitTypeDef(ETL_CLASSIFICATION, "ETL Classification", "1.0", ImmutableSet.<String>of());
-        AtlasClassificationDef jdbcClassifDef   = AtlasTypeUtil.createTraitTypeDef(JDBC_CLASSIFICATION, "JdbcAccess Classification", "1.0", ImmutableSet.<String>of());
-        AtlasClassificationDef logClassifDef    = AtlasTypeUtil.createTraitTypeDef(LOGDATA_CLASSIFICATION, "LogData Classification", "1.0", ImmutableSet.<String>of());
+        AtlasClassificationDef etlClassifDef = AtlasTypeUtil.createTraitTypeDef(ETL_CLASSIFICATION, "ETL Classification", "1.0", ImmutableSet.<String>of());
+        AtlasClassificationDef jdbcClassifDef = AtlasTypeUtil.createTraitTypeDef(JDBC_CLASSIFICATION, "JdbcAccess Classification", "1.0", ImmutableSet.<String>of());
+        AtlasClassificationDef logClassifDef = AtlasTypeUtil.createTraitTypeDef(LOGDATA_CLASSIFICATION, "LogData Classification", "1.0", ImmutableSet.<String>of());
 
         return AtlasTypeUtil.getTypesDef(ImmutableList.<AtlasEnumDef>of(),
                 ImmutableList.<AtlasStructDef>of(),
@@ -267,29 +258,29 @@ public class QuickStartV2 {
         System.out.println("\nCreating sample entities: ");
 
         // Database entities
-        AtlasEntity salesDB     = createDatabase(SALES_DB, "sales database", "John ETL", "hdfs://host:8000/apps/warehouse/sales");
+        AtlasEntity salesDB = createDatabase(SALES_DB, "sales database", "John ETL", "hdfs://host:8000/apps/warehouse/sales");
         AtlasEntity reportingDB = createDatabase(REPORTING_DB, "reporting database", "Jane BI", "hdfs://host:8000/apps/warehouse/reporting");
-        AtlasEntity logDB       = createDatabase(LOGGING_DB, "logging database", "Tim ETL", "hdfs://host:8000/apps/warehouse/logging");
+        AtlasEntity logDB = createDatabase(LOGGING_DB, "logging database", "Tim ETL", "hdfs://host:8000/apps/warehouse/logging");
 
         // Storage Descriptor entities
         AtlasEntity storageDesc = createStorageDescriptor("hdfs://host:8000/apps/warehouse/sales", "TextInputFormat", "TextOutputFormat", true);
 
         // Column entities
-        List<AtlasEntity> salesFactColumns   = ImmutableList.of(createColumn(TIME_ID_COLUMN, "int", "time id"),
+        List<AtlasEntity> salesFactColumns = ImmutableList.of(createColumn(TIME_ID_COLUMN, "int", "time id"),
                 createColumn(PRODUCT_ID_COLUMN, "int", "product id"),
                 createColumn(CUSTOMER_ID_COLUMN, "int", "customer id", PII_CLASSIFICATION),
                 createColumn(SALES_COLUMN, "double", "product id", METRIC_CLASSIFICATION));
 
-        List<AtlasEntity> logFactColumns     = ImmutableList.of(createColumn(TIME_ID_COLUMN, "int", "time id"),
+        List<AtlasEntity> logFactColumns = ImmutableList.of(createColumn(TIME_ID_COLUMN, "int", "time id"),
                 createColumn(APP_ID_COLUMN, "int", "app id"),
                 createColumn(MACHINE_ID_COLUMN, "int", "machine id"),
                 createColumn(LOG_COLUMN, "string", "log data", LOGDATA_CLASSIFICATION));
 
-        List<AtlasEntity> productDimColumns  = ImmutableList.of(createColumn(PRODUCT_ID_COLUMN, "int", "product id"),
+        List<AtlasEntity> productDimColumns = ImmutableList.of(createColumn(PRODUCT_ID_COLUMN, "int", "product id"),
                 createColumn(PRODUCT_NAME_COLUMN, "string", "product name"),
                 createColumn(BRAND_NAME_COLUMN, "int", "brand name"));
 
-        List<AtlasEntity> timeDimColumns     = ImmutableList.of(createColumn(TIME_ID_COLUMN, "int", "time id"),
+        List<AtlasEntity> timeDimColumns = ImmutableList.of(createColumn(TIME_ID_COLUMN, "int", "time id"),
                 createColumn(DAY_OF_YEAR_COLUMN, "int", "day Of Year"),
                 createColumn(WEEKDAY_COLUMN, "int", "week Day"));
 
@@ -298,21 +289,21 @@ public class QuickStartV2 {
                 createColumn(ADDRESS_COLUMN, "string", "customer address", PII_CLASSIFICATION));
 
         // Table entities
-        AtlasEntity salesFact          = createTable(SALES_FACT_TABLE, "sales fact table", salesDB, storageDesc,
+        AtlasEntity salesFact = createTable(SALES_FACT_TABLE, "sales fact table", salesDB, storageDesc,
                 "Joe", "Managed", salesFactColumns, FACT_CLASSIFICATION);
-        AtlasEntity productDim         = createTable(PRODUCT_DIM_TABLE, "product dimension table", salesDB, storageDesc,
+        AtlasEntity productDim = createTable(PRODUCT_DIM_TABLE, "product dimension table", salesDB, storageDesc,
                 "John Doe", "Managed", productDimColumns, DIMENSION_CLASSIFICATION);
-        AtlasEntity customerDim        = createTable(CUSTOMER_DIM_TABLE, "customer dimension table", salesDB, storageDesc,
+        AtlasEntity customerDim = createTable(CUSTOMER_DIM_TABLE, "customer dimension table", salesDB, storageDesc,
                 "fetl", "External", customerDimColumns, DIMENSION_CLASSIFICATION);
-        AtlasEntity timeDim            = createTable(TIME_DIM_TABLE, "time dimension table", salesDB, storageDesc,
+        AtlasEntity timeDim = createTable(TIME_DIM_TABLE, "time dimension table", salesDB, storageDesc,
                 "John Doe", "External", timeDimColumns, DIMENSION_CLASSIFICATION);
-        AtlasEntity loggingFactDaily   = createTable(LOG_FACT_DAILY_MV_TABLE, "log fact daily materialized view", logDB,
+        AtlasEntity loggingFactDaily = createTable(LOG_FACT_DAILY_MV_TABLE, "log fact daily materialized view", logDB,
                 storageDesc, "Tim ETL", "Managed", logFactColumns, LOGDATA_CLASSIFICATION);
         AtlasEntity loggingFactMonthly = createTable(LOG_FACT_MONTHLY_MV_TABLE, "logging fact monthly materialized view", logDB,
                 storageDesc, "Tim ETL", "Managed", logFactColumns, LOGDATA_CLASSIFICATION);
-        AtlasEntity salesFactDaily     = createTable(SALES_FACT_DAILY_MV_TABLE, "sales fact daily materialized view", reportingDB,
+        AtlasEntity salesFactDaily = createTable(SALES_FACT_DAILY_MV_TABLE, "sales fact daily materialized view", reportingDB,
                 storageDesc, "Joe BI", "Managed", salesFactColumns, METRIC_CLASSIFICATION);
-        AtlasEntity salesFactMonthly   = createTable(SALES_FACT_MONTHLY_MV_TABLE, "sales fact monthly materialized view", reportingDB,
+        AtlasEntity salesFactMonthly = createTable(SALES_FACT_MONTHLY_MV_TABLE, "sales fact monthly materialized view", reportingDB,
                 storageDesc, "Jane BI", "Managed", salesFactColumns, METRIC_CLASSIFICATION);
 
         // View entities
@@ -338,7 +329,7 @@ public class QuickStartV2 {
 
     private AtlasEntity createInstance(AtlasEntity entity, String[] traitNames) throws Exception {
         AtlasEntity ret = null;
-        EntityMutationResponse  response = atlasClientV2.createEntity(new AtlasEntityWithExtInfo(entity));
+        EntityMutationResponse response = atlasClientV2.createEntity(new AtlasEntityWithExtInfo(entity));
         List<AtlasEntityHeader> entities = response.getEntitiesByOperation(EntityOperation.CREATE);
 
         if (CollectionUtils.isNotEmpty(entities)) {
@@ -365,8 +356,8 @@ public class QuickStartV2 {
     }
 
     private List<AtlasClassification> toAtlasClassifications(String[] traitNames) {
-        List<AtlasClassification> ret    = new ArrayList<>();
-        ImmutableList<String>     traits = ImmutableList.copyOf(traitNames);
+        List<AtlasClassification> ret = new ArrayList<>();
+        ImmutableList<String> traits = ImmutableList.copyOf(traitNames);
 
         if (CollectionUtils.isNotEmpty(traits)) {
             for (String trait : traits) {
@@ -507,7 +498,7 @@ public class QuickStartV2 {
                 "Table where name=\"sales_fact\", columns",
                 "Table where name=\"sales_fact\", columns as column select column.name, column.dataType, column.comment",
                 "from DataSet",
-                "from Process" };
+                "from Process"};
     }
 
     private void search() throws Exception {
@@ -517,9 +508,9 @@ public class QuickStartV2 {
             AtlasSearchResult results = atlasClientV2.dslSearchWithParams(dslQuery, 10, 0);
 
             if (results != null) {
-                List<AtlasEntityHeader>   entitiesResult  = results.getEntities();
+                List<AtlasEntityHeader> entitiesResult = results.getEntities();
                 List<AtlasFullTextResult> fullTextResults = results.getFullTextResult();
-                AttributeSearchResult     attribResult    = results.getAttributes();
+                AttributeSearchResult attribResult = results.getAttributes();
 
                 if (CollectionUtils.isNotEmpty(entitiesResult)) {
                     System.out.println("query [" + dslQuery + "] returned [" + entitiesResult.size() + "] rows.");
@@ -543,10 +534,10 @@ public class QuickStartV2 {
 
         for (LineageRelation relation : relations) {
             AtlasEntityHeader fromEntity = guidEntityMap.get(relation.getFromEntityId());
-            AtlasEntityHeader toEntity   = guidEntityMap.get(relation.getToEntityId());
+            AtlasEntityHeader toEntity = guidEntityMap.get(relation.getToEntityId());
 
             System.out.println(fromEntity.getDisplayText() + "(" + fromEntity.getTypeName() + ") -> " +
-                    toEntity.getDisplayText()   + "(" + toEntity.getTypeName() + ")");
+                    toEntity.getDisplayText() + "(" + toEntity.getTypeName() + ")");
         }
     }
 

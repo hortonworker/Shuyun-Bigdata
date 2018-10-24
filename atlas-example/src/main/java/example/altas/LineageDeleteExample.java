@@ -1,11 +1,15 @@
 package example.altas;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
 import org.apache.atlas.*;
+import org.apache.atlas.model.SearchFilter;
+import org.apache.atlas.model.typedef.AtlasTypesDef;
 import org.apache.atlas.utils.AuthenticationUtil;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.ArrayUtils;
 
+import javax.ws.rs.core.MultivaluedMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,21 +25,21 @@ public class LineageDeleteExample {
 
 
     //database
-    public static final String EXAMPLE_DB= "Example_DB";
+    public static final String EXAMPLE_DB = "Example_DB";
 
     //tables
     public static final String LOG_DAILY_MV = "log_daily_example_mv";
     public static final String LOG_MONTHLY_MV = "log_monthly_example_mv";
 
     //columns
-    public static final String TIME_ID_DATE_COLUMN               = "time_date_id";
-    public static final String TIME_ID_MONTH_COLUMN               = "time_month_id";
-    public static final String DAILY_MILE_COLUMN                 = "daily_mile";
-    public static final String DAILY_OIL_CONSUMPTION_COLUMN      = "daily_oil_consumption";
-    public static final String VEHICLE_IDENTIFY_NUMBER_MONTH_COLUMN    = "vin_month";
-    public static final String VEHICLE_IDENTIFY_NUMBER_DATE_COLUMN    = "vin_date";
-    public static final String MONTHLY_MILE_COLUMN               = "monthly_mile";
-    public static final String MONTHLY_OIL_CONSUMPTION_COLUMN    = "monthly_oil_consumption";
+    public static final String TIME_ID_DATE_COLUMN = "time_date_id";
+    public static final String TIME_ID_MONTH_COLUMN = "time_month_id";
+    public static final String DAILY_MILE_COLUMN = "daily_mile";
+    public static final String DAILY_OIL_CONSUMPTION_COLUMN = "daily_oil_consumption";
+    public static final String VEHICLE_IDENTIFY_NUMBER_MONTH_COLUMN = "vin_month";
+    public static final String VEHICLE_IDENTIFY_NUMBER_DATE_COLUMN = "vin_date";
+    public static final String MONTHLY_MILE_COLUMN = "monthly_mile";
+    public static final String MONTHLY_OIL_CONSUMPTION_COLUMN = "monthly_oil_consumption";
 
 
     //classification
@@ -46,16 +50,16 @@ public class LineageDeleteExample {
     public static final String AGGREGATION_PROCESS = "aggregation_from_daily_to_monthly";
 
     //types
-    public static final String DATABASE_TYPE               = "DB";
-    public static final String COLUMN_TYPE                 = "Column";
-    public static final String TABLE_TYPE                  = "Table";
-    public static final String LOAD_PROCESS_TYPE           = "LoadProcess";
+    public static final String DATABASE_TYPE = "DB";
+    public static final String COLUMN_TYPE = "Column";
+    public static final String TABLE_TYPE = "Table";
+    public static final String LOAD_PROCESS_TYPE = "LoadProcess";
 
-    public static final String[] TYPES = { LOAD_PROCESS_TYPE, DATABASE_TYPE, TABLE_TYPE, TABLE_TYPE, COLUMN_TYPE,
-            ETL_CLASSIFICATION, LOGDATA_CLASSIFICATION };
+    public static final String[] TYPES = {LOAD_PROCESS_TYPE, DATABASE_TYPE, TABLE_TYPE, TABLE_TYPE, COLUMN_TYPE,
+            ETL_CLASSIFICATION, LOGDATA_CLASSIFICATION};
 
-    public static final String[] COLUMN_TYPES = { TIME_ID_DATE_COLUMN, TIME_ID_MONTH_COLUMN, DAILY_MILE_COLUMN, DAILY_OIL_CONSUMPTION_COLUMN,
-            VEHICLE_IDENTIFY_NUMBER_MONTH_COLUMN, VEHICLE_IDENTIFY_NUMBER_DATE_COLUMN, MONTHLY_MILE_COLUMN, MONTHLY_OIL_CONSUMPTION_COLUMN };
+    public static final String[] COLUMN_TYPES = {TIME_ID_DATE_COLUMN, TIME_ID_MONTH_COLUMN, DAILY_MILE_COLUMN, DAILY_OIL_CONSUMPTION_COLUMN,
+            VEHICLE_IDENTIFY_NUMBER_MONTH_COLUMN, VEHICLE_IDENTIFY_NUMBER_DATE_COLUMN, MONTHLY_MILE_COLUMN, MONTHLY_OIL_CONSUMPTION_COLUMN};
 
     private final AtlasClientV2 atlasClientV2;
 
@@ -112,37 +116,36 @@ public class LineageDeleteExample {
 
     void clearentities() throws Exception {
         System.out.println("\nDeleting sample entities: ");
-        String uid=null;
+        String uid = null;
 
 
         //delete columns
-        for (String column_type: COLUMN_TYPES){
-            atlasClientV2.deleteEntityByGuid(getEntityGuid(column_type,COLUMN_TYPE));
+        for (String column_type : COLUMN_TYPES) {
+            atlasClientV2.deleteEntityByGuid(getEntityGuid(column_type, COLUMN_TYPE));
         }
 
         //delete process
-        atlasClientV2.deleteEntityByGuid(getEntityGuid(AGGREGATION_PROCESS,LOAD_PROCESS_TYPE));
+        atlasClientV2.deleteEntityByGuid(getEntityGuid(AGGREGATION_PROCESS, LOAD_PROCESS_TYPE));
 
 
         //delete tables
-        atlasClientV2.deleteEntityByGuid(getEntityGuid(LOG_DAILY_MV,TABLE_TYPE));
-        atlasClientV2.deleteEntityByGuid(getEntityGuid(LOG_MONTHLY_MV,TABLE_TYPE));
+        atlasClientV2.deleteEntityByGuid(getEntityGuid(LOG_DAILY_MV, TABLE_TYPE));
+        atlasClientV2.deleteEntityByGuid(getEntityGuid(LOG_MONTHLY_MV, TABLE_TYPE));
 
         //delete database
-        atlasClientV2.deleteEntityByGuid(getEntityGuid(EXAMPLE_DB,DATABASE_TYPE));
-
+        atlasClientV2.deleteEntityByGuid(getEntityGuid(EXAMPLE_DB, DATABASE_TYPE));
 
         //delete classification & type
-//        MultivaluedMap<String, String> searchParams = new MultivaluedMapImpl();
-//
-//        for (String typeName : TYPES) {
-//            searchParams.clear();
-//            searchParams.add(SearchFilter.PARAM_NAME, typeName);
-//            SearchFilter searchFilter = new SearchFilter(searchParams);
-//
-//            AtlasTypesDef searchDefs = atlasClientV2.getAllTypeDefs(searchFilter);
-//            atlasClientV2.deleteAtlasTypeDefs(searchDefs);
-//        }
+        MultivaluedMap<String, String> searchParams = new MultivaluedMapImpl();
+
+        for (String typeName : TYPES) {
+            searchParams.clear();
+            searchParams.add(SearchFilter.PARAM_NAME, typeName);
+            SearchFilter searchFilter = new SearchFilter(searchParams);
+
+            AtlasTypesDef searchDefs = atlasClientV2.getAllTypeDefs(searchFilter);
+            atlasClientV2.deleteAtlasTypeDefs(searchDefs);
+        }
 
 
 //        Map<String, String> attributes = new HashMap<>();
@@ -154,8 +157,6 @@ public class LineageDeleteExample {
 //
 //        System.out.println(hello.keySet().toString());
     }
-
-
 
 
     private String getEntityGuid(String name, String type) {
