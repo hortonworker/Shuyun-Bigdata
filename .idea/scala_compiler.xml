@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ScalaCompilerConfiguration">
-    <profile name="Maven 1" modules="spark-example" />
+    <profile name="Maven 1" modules="spark-llap-hpd3.0,spark-example,spark-llap-hdp3.0" />
   </component>
 </project>
