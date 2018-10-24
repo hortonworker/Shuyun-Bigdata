@@ -1,19 +1,19 @@
 package example.storm.phoenix;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.phoenix.schema.SortOrder;
 import org.apache.phoenix.schema.types.PDataType;
 import org.apache.phoenix.schema.types.PFloat;
 import org.apache.phoenix.schema.types.PInteger;
 import org.apache.phoenix.schema.types.PLong;
-import org.apache.phoenix.schema.SortOrder;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 
 public class Utils {
@@ -110,8 +110,9 @@ public class Utils {
 
     /**
      * Use a default value if the provided value is {@code null}.
-     * @param <T> the type of value
-     * @param value the value to use, but not if {@code null}.
+     *
+     * @param <T>          the type of value
+     * @param value        the value to use, but not if {@code null}.
      * @param defaultValue the value to utilize when {@code value} is {@code null}
      * @return {@code value} if not {@code null}, otherwise {@code defaultValue}
      */

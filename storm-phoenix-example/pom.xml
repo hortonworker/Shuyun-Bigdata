@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>shuyun.bigdata</artifactId>
@@ -45,10 +45,10 @@
         </dependency>
         <!--&lt;!&ndash; https://mvnrepository.com/artifact/org.apache.kafka/kafka &ndash;&gt;-->
         <!--<dependency>-->
-            <!--<groupId>org.apache.kafka</groupId>-->
-            <!--<artifactId>kafka_2.11</artifactId>-->
-            <!--<version>1.0.0.2.6.5.0-292</version>-->
-            <!--<scope>provided</scope>-->
+        <!--<groupId>org.apache.kafka</groupId>-->
+        <!--<artifactId>kafka_2.11</artifactId>-->
+        <!--<version>1.0.0.2.6.5.0-292</version>-->
+        <!--<scope>provided</scope>-->
         <!--</dependency>-->
         <!-- https://mvnrepository.com/artifact/org.apache.ambari/ambari-metrics-storm-sink -->
         <dependency>
@@ -203,11 +203,11 @@
                     <transformers>
                         <!-- Keep us from getting a can't overwrite file error -->
                         <transformer
-                                implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer" />
+                                implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"/>
                         <!-- Keep us from getting errors when trying to use WASB from the storm-hdfs
                             bolt -->
                         <transformer
-                                implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                                implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                     </transformers>
                     <!-- Keep us from getting a bad signature error -->
                     <filters>

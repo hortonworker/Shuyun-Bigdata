@@ -57,7 +57,9 @@
 
     <property>
         <name>hbase.coprocessor.region.classes</name>
-        <value>org.apache.hadoop.hbase.security.access.SecureBulkLoadEndpoint,org.apache.ranger.authorization.hbase.RangerAuthorizationCoprocessor</value>
+        <value>
+            org.apache.hadoop.hbase.security.access.SecureBulkLoadEndpoint,org.apache.ranger.authorization.hbase.RangerAuthorizationCoprocessor
+        </value>
     </property>
 
     <property>
@@ -272,7 +274,7 @@
 
     <property>
         <name>phoenix.functions.allowUserDefinedFunctions</name>
-        <value> </value>
+        <value></value>
     </property>
 
     <property>
@@ -294,5 +296,5 @@
         <name>zookeeper.znode.parent</name>
         <value>/hbase-unsecure</value>
     </property>
-    
-  </configuration>
+
+</configuration>

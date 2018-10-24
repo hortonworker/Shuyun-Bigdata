@@ -1,11 +1,6 @@
 package example.storm.phoenix;
 
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -19,6 +14,11 @@ import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.topology.base.BaseRichBolt;
 import org.apache.storm.tuple.Tuple;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 
 public class PhoenixBolt2 extends BaseRichBolt {
@@ -40,12 +40,12 @@ public class PhoenixBolt2 extends BaseRichBolt {
             Put put = new Put(rowkey);
             long ctime = msg.getTime();
             //	addColumn(byte[] family, byte[] qualifier, long ts, byte[] value)
-            put.addColumn("0".getBytes(), "account".getBytes(), ctime, msg.getAccount().getBytes());
-            put.addColumn("0".getBytes(), "vendorid".getBytes(), ctime, msg.getVendorID().getBytes());
-            put.addColumn("0".getBytes(), "itemid".getBytes(), ctime, msg.getItemID().getBytes());
-            put.addColumn("0".getBytes(), "itemquantity".getBytes(), ctime, Utils.encode(msg.getItemQuantity()));
-            put.addColumn("0".getBytes(), "status".getBytes(), ctime, msg.getStatus().getBytes());
-            put.addColumn("0".getBytes(), "time".getBytes(), ctime, Utils.encode(msg.getTime()));
+            put.addColumn("0".getBytes(), "ACCOUNT".getBytes(), ctime, Bytes.toBytes(msg.getAccount()));
+            put.addColumn("0".getBytes(), "VENDORID".getBytes(), ctime, Bytes.toBytes(msg.getVendorID()));
+            put.addColumn("0".getBytes(), "ITEMID".getBytes(), ctime, Bytes.toBytes(msg.getItemID()));
+            put.addColumn("0".getBytes(), "ITEMQUANTITY".getBytes(), ctime, Utils.encode(msg.getItemQuantity()));
+            put.addColumn("0".getBytes(), "STATUS".getBytes(), ctime, Bytes.toBytes(msg.getStatus()));
+            put.addColumn("0".getBytes(), "TIME".getBytes(), ctime, Utils.encode(msg.getTime()));
 
             List<Put> puts = new ArrayList<>();
             puts.add(put);
@@ -61,7 +61,7 @@ public class PhoenixBolt2 extends BaseRichBolt {
                 throw new RuntimeException(e);
             }
 
-         } catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 

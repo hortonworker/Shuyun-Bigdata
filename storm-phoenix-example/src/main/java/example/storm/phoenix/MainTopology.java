@@ -1,20 +1,17 @@
 package example.storm.phoenix;
 
 
-import java.util.Properties;
-import java.util.UUID;
-
-
 import org.apache.kafka.common.requests.ListOffsetRequest;
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
+import org.apache.storm.StormSubmitter;
 import org.apache.storm.kafka.*;
 import org.apache.storm.spout.SchemeAsMultiScheme;
 import org.apache.storm.topology.TopologyBuilder;
 
 public class MainTopology {
 
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args) throws Exception {
 
         // Zookeeper quorum
         BrokerHosts brokerHosts = new ZkHosts("sandbox-hdp.hortonworks.com:2181");
@@ -63,7 +60,7 @@ public class MainTopology {
         spoutConfig.startOffsetTime = ListOffsetRequest.LATEST_TIMESTAMP;
         spoutConfig.maxOffsetBehind = Long.MAX_VALUE;
         spoutConfig.useStartOffsetTimeIfOffsetOutOfRange = true;
-        spoutConfig. metricsTimeBucketSizeInSecs = 60;
+        spoutConfig.metricsTimeBucketSizeInSecs = 60;
 
 
         TopologyBuilder builder = new TopologyBuilder();
@@ -73,10 +70,11 @@ public class MainTopology {
         builder.setBolt("phoenix-bolt", new PhoenixBolt2()).shuffleGrouping("kafka_spout");
 
         String topologyName = "kafkaTopology";
-        LocalCluster cluster = new LocalCluster();
-        cluster.submitTopology(topologyName, conf, builder.createTopology());
+//        LocalCluster cluster = new LocalCluster();
+        StormSubmitter.submitTopology(topologyName, conf, builder.createTopology());
+//        cluster.submitTopology(topologyName, conf, builder.createTopology());
 
-        Thread.sleep(10000);
+//        Thread.sleep(10000);
 //        cluster.killTopology(topologyName);
 //        cluster.shutdown();
 
