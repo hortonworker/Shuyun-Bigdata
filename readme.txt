@@ -14,10 +14,10 @@ step 1. create phoenix table in your hbase environment
 //create new table
 0: jdbc:phoenix:localhost:2181> CREATE TABLE IF NOT EXISTS ORDER_HISTORY (
 salt CHAR(2) NOT NULL,
-orderid CHAR(36) NOT NULL,
-account CHAR(36),
-vendorid CHAR(36),
-itemid CHAR(36),
+orderid VARCHAR NOT NULL,
+account VARCHAR,
+vendorid VARCHAR,
+itemid VARCHAR,
 itemquantity Integer,
 status VARCHAR,
 time BIGINT,
@@ -51,7 +51,19 @@ sh-3.2# mvn -pl ./storm-phoenix-example/ -am -DskipTests package
 //upload to sandbox server
 sh-3.2# scp -P 2222 ./target/*.jar root@localhost:/tmp/storm
 
-step 5. launch the storm
+
+step 5. add a proerty in 'custom storm-site.xml' through ambari page
+
+add custom property topology.classpath=/etc/hbase/conf:/etc/hadoop/conf:/usr/hdp/current/atlas-client/conf:/usr/hdp/current/atlas-client/hook/storm/atlas-storm-plugin-impl
+
+
+step 6. copy atlas configuration files to storm conf directory
+
+[root@sandbox-hdp ~]# cd /usr/hdp/current/atlas-client/conf/
+[root@sandbox-hdp conf]# scp atlas-application.properties /usr/hdp/current/storm-client/conf/
+
+
+step 7. launch the storm
 
 //launch storm application
-[root@sandbox-hdp bin]# storm jar /tmp/storm/storm-phoenix-example-1.0-SNAPSHOT.jar example.storm.phoenix.MainTopology --jars "/usr/hdp/current/storm-client/lib/storm-core-1.1.0.2.6.5.0-292.jar,/usr/hdp/current/storm-client/external/storm-kafka/storm-kafka-1.1.0.2.6.5.0-292.jar,/usr/hdp/current/kafka-broker/libs/kafka_2.11-1.0.0.2.6.5.0-292.jar,/usr/hdp/current/kafka-broker/libs/scala-library-2.11.12.jar,/usr/hdp/2.6.5.0-292/kafka/libs/kafka-clients-1.0.0.2.6.5.0-292.jar,/usr/hdp/2.6.5.0-292/hadoop/lib/commons-lang-2.6.jar,/usr/hdp/2.6.5.0-292/storm/contrib/storm-autocreds/hadoop-client-2.7.3.2.6.5.0-292.jar,/usr/hdp/2.6.5.0-292/hadoop/client/hadoop-hdfs-2.7.3.2.6.5.0-292.jar,/usr/hdp/2.6.5.0-292/hadoop/client/hadoop-common-2.7.3.2.6.5.0-292.jar,/usr/hdp/2.6.5.0-292/hbase/lib/hbase-client-1.1.2.2.6.5.0-292.jar,/usr/lib/ambari-infra-solr-client/libs/curator-client-2.12.0.jar,/usr/hdp/2.6.5.0-292/hadoop/client/guava-11.0.2.jar,/usr/hdp/2.6.5.0-292/oozie/libserver/json-simple-1.1.jar,/usr/hdp/2.6.5.0-292/kafka/libs/metrics-core-2.2.0.jar,/usr/hdp/current/hbase-client/lib/hbase-common-1.1.2.2.6.5.0-292.jar,/usr/hdp/current/phoenix-client/lib/phoenix-core-4.7.0.2.6.5.0-292.jar,/usr/hdp/current/hbase-client/lib/hbase-protocol-1.1.2.2.6.5.0-292.jar,/usr/hdp/current/hbase-client/lib/htrace-core-3.1.0-incubating.jar,/usr/hdp/2.6.5.0-292/hbase/lib/netty-all-4.0.52.Final.jar"
+[root@sandbox-hdp bin]# storm jar /tmp/storm/storm-phoenix-example-1.0-SNAPSHOT.jar example.storm.phoenix.MainTopology --jars "/usr/hdp/current/storm-client/external/storm-kafka/storm-kafka-1.1.0.2.6.5.0-292.jar,/usr/hdp/current/kafka-broker/libs/kafka_2.11-1.0.0.2.6.5.0-292.jar,/usr/hdp/current/kafka-broker/libs/scala-library-2.11.12.jar,/usr/hdp/2.6.5.0-292/kafka/libs/kafka-clients-1.0.0.2.6.5.0-292.jar,/usr/hdp/2.6.5.0-292/hadoop/lib/commons-lang-2.6.jar,/usr/hdp/2.6.5.0-292/storm/contrib/storm-autocreds/hadoop-client-2.7.3.2.6.5.0-292.jar,/usr/hdp/2.6.5.0-292/hadoop/client/hadoop-hdfs-2.7.3.2.6.5.0-292.jar,/usr/hdp/2.6.5.0-292/hadoop/client/hadoop-common-2.7.3.2.6.5.0-292.jar,/usr/hdp/2.6.5.0-292/hbase/lib/hbase-client-1.1.2.2.6.5.0-292.jar,/usr/lib/ambari-infra-solr-client/libs/curator-client-2.12.0.jar,/usr/hdp/2.6.5.0-292/hadoop/client/guava-11.0.2.jar,/usr/hdp/2.6.5.0-292/oozie/libserver/json-simple-1.1.jar,/usr/hdp/2.6.5.0-292/kafka/libs/metrics-core-2.2.0.jar,/usr/hdp/current/hbase-client/lib/hbase-common-1.1.2.2.6.5.0-292.jar,/usr/hdp/current/phoenix-client/lib/phoenix-core-4.7.0.2.6.5.0-292.jar,/usr/hdp/current/hbase-client/lib/hbase-protocol-1.1.2.2.6.5.0-292.jar,/usr/hdp/current/hbase-client/lib/htrace-core-3.1.0-incubating.jar,/usr/hdp/2.6.5.0-292/hbase/lib/netty-all-4.0.52.Final.jar,/usr/hdp/2.6.5.0-292/hadoop/client/commons-configuration.jar"
